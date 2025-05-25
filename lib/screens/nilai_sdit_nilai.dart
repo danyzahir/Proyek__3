@@ -9,7 +9,6 @@ import 'data_guru_anak.dart';
 import 'login.dart';
 import 'rekap_absensi.dart';
 
-
 class NilaiSDITNilai extends StatefulWidget {
   final String username;
   final String namaKelas;
@@ -25,8 +24,16 @@ class NilaiSDITNilai extends StatefulWidget {
 }
 
 class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
-  // Menyimpan nilai UTS dan UAS yang sudah diinput user, key = nama siswa
-  Map<String, Map<String, String>> nilaiMap = {};
+  Map<String, TextEditingController> utsControllers = {};
+  Map<String, TextEditingController> uasControllers = {};
+  Map<String, String> rataRataMap = {};
+
+  @override
+  void dispose() {
+    for (var c in utsControllers.values) c.dispose();
+    for (var c in uasControllers.values) c.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,47 +43,161 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
     return Scaffold(
       backgroundColor: Colors.blueGrey[100],
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildHeader(screenWidth, screenHeight),
-              SizedBox(height: screenHeight * 0.02),
-              Padding(
+        child: Column(
+          children: [
+            _buildHeader(screenWidth, screenHeight),
+            SizedBox(height: screenHeight * 0.02),
+            Expanded(
+              child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                child: Column(
-                  children: [
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                child: FutureBuilder<QuerySnapshot>(
+                  future: FirebaseFirestore.instance
+                      .collection('anak_sdit')
+                      .where('kelas', isEqualTo: '1')
+                      .get(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(
+                          child: Text('Tidak ada data siswa kelas 1.'));
+                    }
+
+                    final dataList = snapshot.data!.docs;
+
+                    // Init controllers jika belum ada
+                    for (var doc in dataList) {
+                      final nama = doc['nama'] ?? '';
+                      if (!utsControllers.containsKey(nama)) {
+                        utsControllers[nama] = TextEditingController();
+                      }
+                      if (!uasControllers.containsKey(nama)) {
+                        uasControllers[nama] = TextEditingController();
+                      }
+                    }
+
+                    return Column(
+                      children: [
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              elevation: 5,
+                              shadowColor: Colors.black54,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 25, vertical: 10),
+                            ),
+                            onPressed: _simpanNilaiKeFirebase,
+                            child: const Text(
+                              'SIMPAN NILAI',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                          elevation: 5,
-                          shadowColor: Colors.black54,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 25, vertical: 10),
                         ),
-                        onPressed: _simpanNilaiKeFirebase,
-                        child: const Text(
-                          'SIMPAN NILAI',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(height: 10),
+                        _buildTableHeader(screenWidth),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: dataList.length,
+                            itemBuilder: (context, index) {
+                              final data =
+                                  dataList[index].data() as Map<String, dynamic>;
+                              final nama = data['nama'] ?? '-';
+
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: index % 2 == 0
+                                      ? Colors.white
+                                      : Colors.grey[100],
+                                  borderRadius: BorderRadius.vertical(
+                                    bottom: index == dataList.length - 1
+                                        ? const Radius.circular(10)
+                                        : Radius.zero,
+                                  ),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                    vertical: screenWidth * 0.025),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: Center(
+                                        child: Text(
+                                          '${index + 1}',
+                                          style:
+                                              TextStyle(fontSize: screenWidth * 0.035),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Center(
+                                        child: Text(
+                                          nama,
+                                          style:
+                                              TextStyle(fontSize: screenWidth * 0.035),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Center(
+                                        child: TextField(
+                                          controller: utsControllers[nama],
+                                          keyboardType: TextInputType.number,
+                                          decoration: const InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: 'UTS',
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Center(
+                                        child: TextField(
+                                          controller: uasControllers[nama],
+                                          keyboardType: TextInputType.number,
+                                          decoration: const InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: 'UAS',
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Center(
+                                        child: Text(
+                                          rataRataMap[nama] ?? '-',
+                                          style: TextStyle(
+                                              fontSize: screenWidth * 0.035,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    _buildTableHeader(screenWidth),
-                    _buildSiswaList(screenWidth),
-                  ],
+                      ],
+                    );
+                  },
                 ),
               ),
-              SizedBox(height: screenHeight * 0.03),
-            ],
-          ),
+            ),
+            SizedBox(height: screenHeight * 0.03),
+          ],
         ),
       ),
       bottomNavigationBar: _buildBottomNav(screenHeight, screenWidth),
@@ -187,131 +308,6 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
     );
   }
 
-  Widget _buildSiswaList(double screenWidth) {
-    return FutureBuilder<QuerySnapshot>(
-      future: FirebaseFirestore.instance
-          .collection('anak_sdit')
-          .where('kelas', isEqualTo: '1') // Tampilkan hanya kelas 1
-          .get(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Padding(
-            padding: EdgeInsets.all(20.0),
-            child: CircularProgressIndicator(),
-          );
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Text('Tidak ada data siswa kelas 1.'),
-          );
-        }
-
-        final dataList = snapshot.data!.docs;
-
-        return Column(
-          children: List.generate(dataList.length, (index) {
-            final data = dataList[index].data() as Map<String, dynamic>;
-            final nama = data['nama'] ?? '-';
-
-            // Ambil nilai dari nilaiMap jika sudah ada, atau default ""
-            String uts = nilaiMap[nama]?['uts'] ?? '';
-            String uas = nilaiMap[nama]?['uas'] ?? '';
-
-            // Hitung rata-rata jika nilai valid
-            double? utsVal = double.tryParse(uts);
-            double? uasVal = double.tryParse(uas);
-            String rata2 = '';
-            if (utsVal != null && uasVal != null) {
-              rata2 = ((utsVal + uasVal) / 2).toStringAsFixed(2);
-            }
-
-            return Container(
-              decoration: BoxDecoration(
-                color: index % 2 == 0 ? Colors.white : Colors.grey[100],
-                borderRadius: BorderRadius.vertical(
-                  bottom: index == dataList.length - 1
-                      ? const Radius.circular(10)
-                      : Radius.zero,
-                ),
-              ),
-              padding: EdgeInsets.symmetric(vertical: screenWidth * 0.025),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Center(
-                      child: Text(
-                        '${index + 1}',
-                        style: TextStyle(fontSize: screenWidth * 0.035),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Center(
-                      child: Text(
-                        nama,
-                        style: TextStyle(fontSize: screenWidth * 0.035),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Center(
-                      child: TextFormField(
-                        initialValue: uts,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'UTS',
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            nilaiMap[nama] ??= {};
-                            nilaiMap[nama]!['uts'] = value;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Center(
-                      child: TextFormField(
-                        initialValue: uas,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'UAS',
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            nilaiMap[nama] ??= {};
-                            nilaiMap[nama]!['uas'] = value;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Center(
-                      child: Text(
-                        rata2,
-                        style: TextStyle(fontSize: screenWidth * 0.035),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
-        );
-      },
-    );
-  }
-
   Widget _buildHeaderCell(String text, double screenWidth, {int flex = 1}) {
     return Expanded(
       flex: flex,
@@ -402,27 +398,37 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
   Future<void> _simpanNilaiKeFirebase() async {
     final batch = FirebaseFirestore.instance.batch();
 
-    nilaiMap.forEach((nama, nilai) {
-      double? utsVal = double.tryParse(nilai['uts'] ?? '');
-      double? uasVal = double.tryParse(nilai['uas'] ?? '');
-      if (utsVal != null && uasVal != null) {
-        double rata2 = (utsVal + uasVal) / 2;
+    rataRataMap.clear();
 
-        final docRef = FirebaseFirestore.instance
-            .collection('nilai_sdit')
-            .doc(nama); // dokumen per nama siswa
+    utsControllers.forEach((nama, utsC) {
+      final uasC = uasControllers[nama];
+      if (uasC != null) {
+        double? utsVal = double.tryParse(utsC.text);
+        double? uasVal = double.tryParse(uasC.text);
+        if (utsVal != null && uasVal != null) {
+          double rata2 = (utsVal + uasVal) / 2;
 
-        batch.set(docRef, {
-          'nama': nama,
-          'uts': utsVal,
-          'uas': uasVal,
-          'rata2': rata2,
-          'kelas': '1',
-        });
+          final docRef =
+              FirebaseFirestore.instance.collection('nilai_sdit').doc(nama);
+
+          batch.set(docRef, {
+            'nama': nama,
+            'uts': utsVal,
+            'uas': uasVal,
+            'rata2': rata2,
+            'kelas': '1',
+          });
+
+          rataRataMap[nama] = rata2.toStringAsFixed(2);
+        }
       }
     });
 
     await batch.commit();
+
+    setState(() {
+      // update tampilan rata-rata
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Data nilai berhasil disimpan')),
