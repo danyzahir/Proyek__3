@@ -97,7 +97,7 @@ class RekapNilaiTkq extends StatelessWidget {
                     ),
                     SizedBox(height: screenHeight * 0.015),
                     Text(
-                      "Rekap Nilai - TKQ",
+                      "REKAP NILAI - TKQ",
                       style: TextStyle(
                         fontSize: screenWidth * 0.06,
                         fontWeight: FontWeight.bold,
@@ -188,6 +188,7 @@ class RekapNilaiTkq extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (context) => Rekapnilaitkqkelas(
                               username: username,
+                              kelas: "KELAS A",
                             ),
                           ),
                         );
@@ -196,7 +197,7 @@ class RekapNilaiTkq extends StatelessWidget {
                     _menuBox(
                       "Kelas B",
                       CircleAvatar(
-                        backgroundColor:  Colors.green,
+                        backgroundColor: Colors.green,
                         radius: screenWidth * 0.07,
                         child: Text(
                           "B",
@@ -209,12 +210,22 @@ class RekapNilaiTkq extends StatelessWidget {
                       ),
                       screenWidth,
                       screenHeight,
-                      () {},
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Rekapnilaitkqkelas(
+                              username: username,
+                              kelas: "KELAS B",
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     _menuBox(
                       "Kelas C",
                       CircleAvatar(
-                        backgroundColor:  Colors.green,
+                        backgroundColor: Colors.green,
                         radius: screenWidth * 0.07,
                         child: Text(
                           "C",
@@ -227,7 +238,17 @@ class RekapNilaiTkq extends StatelessWidget {
                       ),
                       screenWidth,
                       screenHeight,
-                      () {},
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Rekapnilaitkqkelas(
+                              username: username,
+                              kelas: "KELAS C",
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -276,7 +297,6 @@ class RekapNilaiTkq extends StatelessWidget {
     );
   }
 
-  // ✅ Update fungsi _menuBox agar pakai Widget iconWidget
   Widget _menuBox(
     String title,
     Widget iconWidget,

@@ -178,7 +178,7 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
                   ],
                 ),
                 const SizedBox(height: 15),
-                const Text("ABSENSI",
+                const Text("ABSENSI GURU",
                     style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -255,7 +255,8 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomeScreen(username: widget.username),
+                      builder: (context) =>
+                          HomeScreen(username: widget.username),
                     ),
                   );
                 }, false),
@@ -263,7 +264,8 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => AbsensiScreen(username: widget.username),
+                      builder: (context) =>
+                          AbsensiScreen(username: widget.username),
                     ),
                   );
                 }, true),
@@ -271,7 +273,8 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => NilaiScreen(username: widget.username),
+                      builder: (context) =>
+                          NilaiScreen(username: widget.username),
                     ),
                   );
                 }, false),
@@ -279,7 +282,8 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DataScreen(username: widget.username),
+                      builder: (context) =>
+                          DataScreen(username: widget.username),
                     ),
                   );
                 }, false),
@@ -287,7 +291,8 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => RekapScreen(username: widget.username),
+                      builder: (context) =>
+                          RekapScreen(username: widget.username),
                     ),
                   );
                 }, false),
@@ -327,7 +332,8 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
     );
   }
 
-  Widget _navItem(String title, IconData icon, VoidCallback onTap, bool isActive) {
+  Widget _navItem(
+      String title, IconData icon, VoidCallback onTap, bool isActive) {
     return GestureDetector(
       onTap: onTap,
       child: Column(

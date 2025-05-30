@@ -34,7 +34,7 @@ class _DataGuruSDITState extends State<DataGuruSDIT> {
           await FirebaseFirestore.instance.collection('guru_sdit').get();
 
       final List<Map<String, String>> loadedGuru = snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         return {
           'nama': data['nama']?.toString() ?? '',
           'jabatan': data['jabatan']?.toString() ?? '',
@@ -288,9 +288,9 @@ class _DataGuruSDITState extends State<DataGuruSDIT> {
           _navItem(context, "Nilai", Icons.my_library_books_rounded,
               NilaiScreen(username: widget.username), false, screenWidth),
           _navItem(context, "Data Guru & Anak", Icons.person,
-              DataScreen(username: widget.username), false, screenWidth),
+              DataScreen(username: widget.username), true, screenWidth),
           _navItem(context, "Rekap Absensi", Icons.receipt_long,
-              RekapScreen(username: widget.username), true, screenWidth),
+              RekapScreen(username: widget.username), false, screenWidth),
         ],
       ),
     );

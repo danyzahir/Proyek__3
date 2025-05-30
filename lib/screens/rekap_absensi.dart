@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proyek3/screens/rekap_absensi_anak.dart';
+import 'package:proyek3/screens/rekap_absensi_tkq.dart';
 import 'absensi.dart';
 import 'home_screen.dart';
 import 'nilai.dart';
@@ -222,7 +223,13 @@ class RekapScreen extends StatelessWidget {
                       screenWidth,
                       screenHeight,
                       () {
-                        // TODO: Implementasi halaman Rekap Absensi Anak TKQ
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                RekapAbsenTKQ(username: username),
+                          ),
+                        );
                       },
                     ),
                   ],

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'rekap_siswa_sdit.dart';
+import 'package:proyek3/screens/rekap_absensi.dart';
 import 'absensi.dart';
 import 'home_screen.dart';
 import 'nilai.dart';
@@ -11,8 +10,10 @@ import 'login.dart';
 
 class Rekapnilaisditkelas extends StatelessWidget {
   final String username;
+  final String kelas;
 
-  const Rekapnilaisditkelas({super.key, required this.username});
+  const Rekapnilaisditkelas(
+      {super.key, required this.username, required this.kelas});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +44,8 @@ class Rekapnilaisditkelas extends StatelessWidget {
                         children: [
                           Text(
                             username,
-                            style: const TextStyle(fontSize: 16, color: Colors.white),
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.white),
                           ),
                           const SizedBox(width: 10),
                           PopupMenuButton<String>(
@@ -52,14 +54,15 @@ class Rekapnilaisditkelas extends StatelessWidget {
                                 await FirebaseAuth.instance.signOut();
                                 Navigator.pushAndRemoveUntil(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const LoginScreen()),
                                   (route) => false,
                                 );
                               }
                             },
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                                borderRadius: BorderRadius.circular(10)),
                             itemBuilder: (context) => [
                               const PopupMenuItem(
                                 value: 'logout',
@@ -83,9 +86,9 @@ class Rekapnilaisditkelas extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 15),
-                  const Text(
-                    "REKAP NILAI TKQ",
-                    style: TextStyle(
+                  Text(
+                    "REKAP NILAI KELAS $kelas",
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -113,45 +116,40 @@ class Rekapnilaisditkelas extends StatelessWidget {
                     child: Row(
                       children: const [
                         Expanded(
-                          flex: 1,
-                          child: Center(
-                              child: Text("No",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold))),
-                        ),
+                            flex: 1,
+                            child: Center(
+                                child: Text("No",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)))),
                         Expanded(
-                          flex: 3,
-                          child: Center(
-                              child: Text("Nama",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold))),
-                        ),
+                            flex: 3,
+                            child: Center(
+                                child: Text("Nama",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)))),
                         Expanded(
-                          flex: 2,
-                          child: Center(
-                              child: Text("UTS",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold))),
-                        ),
+                            flex: 2,
+                            child: Center(
+                                child: Text("UTS",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)))),
                         Expanded(
-                          flex: 2,
-                          child: Center(
-                              child: Text("UAS",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold))),
-                        ),
+                            flex: 2,
+                            child: Center(
+                                child: Text("UAS",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)))),
                         Expanded(
-                          flex: 2,
-                          child: Center(
-                              child: Text("Rata2",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold))),
-                        ),
+                            flex: 2,
+                            child: Center(
+                                child: Text("Rata2",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)))),
                       ],
                     ),
                   ),
@@ -159,7 +157,7 @@ class Rekapnilaisditkelas extends StatelessWidget {
                   FutureBuilder<QuerySnapshot>(
                     future: FirebaseFirestore.instance
                         .collection('nilai_sdit')
-                        .where('kelas', isEqualTo: '1')
+                        .where('kelas', isEqualTo: kelas)
                         .get(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -174,14 +172,18 @@ class Rekapnilaisditkelas extends StatelessWidget {
                       final dataList = docs.map((doc) {
                         final data = doc.data() as Map<String, dynamic>;
                         final nama = data['nama'] ?? '-';
-                        final uts = double.tryParse(data['uts']?.toString() ?? '0') ?? 0;
-                        final uas = double.tryParse(data['uas']?.toString() ?? '0') ?? 0;
+                        final uts =
+                            double.tryParse(data['uts']?.toString() ?? '0') ??
+                                0;
+                        final uas =
+                            double.tryParse(data['uas']?.toString() ?? '0') ??
+                                0;
                         final rata2 = (uts * 0.4) + (uas * 0.6);
                         return {
                           'nama': nama,
                           'uts': uts,
                           'uas': uas,
-                          'rata2': rata2,
+                          'rata2': rata2
                         };
                       }).toList();
 
@@ -199,11 +201,27 @@ class Rekapnilaisditkelas extends StatelessWidget {
                             ),
                             child: Row(
                               children: [
-                                Expanded(flex: 1, child: Center(child: Text('${index + 1}'))),
-                                Expanded(flex: 3, child: Center(child: Text(item['nama']))),
-                                Expanded(flex: 2, child: Center(child: Text(item['uts'].toStringAsFixed(1)))),
-                                Expanded(flex: 2, child: Center(child: Text(item['uas'].toStringAsFixed(1)))),
-                                Expanded(flex: 2, child: Center(child: Text(item['rata2'].toStringAsFixed(1)))),
+                                Expanded(
+                                    flex: 1,
+                                    child: Center(child: Text('${index + 1}'))),
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(child: Text(item['nama']))),
+                                Expanded(
+                                    flex: 2,
+                                    child: Center(
+                                        child: Text(
+                                            item['uts'].toStringAsFixed(1)))),
+                                Expanded(
+                                    flex: 2,
+                                    child: Center(
+                                        child: Text(
+                                            item['uas'].toStringAsFixed(1)))),
+                                Expanded(
+                                    flex: 2,
+                                    child: Center(
+                                        child: Text(
+                                            item['rata2'].toStringAsFixed(1)))),
                               ],
                             ),
                           );
@@ -247,7 +265,7 @@ class Rekapnilaisditkelas extends StatelessWidget {
             _navItem(context, "Data Siswa & Guru", Icons.person,
                 DataScreen(username: username), false),
             _navItem(context, "Rekap Absensi", Icons.receipt_long,
-                RekapSiswaSdit(username: username), false),
+                RekapScreen(username: username), false),
           ],
         ),
       ),
@@ -260,9 +278,7 @@ class Rekapnilaisditkelas extends StatelessWidget {
       onTap: () {
         if (!isActive) {
           Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => page),
-          );
+              context, MaterialPageRoute(builder: (context) => page));
         }
       },
       child: Column(

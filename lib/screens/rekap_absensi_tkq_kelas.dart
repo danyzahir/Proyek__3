@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:proyek3/screens/rekap_siswa_sdit.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:proyek3/screens/rekap_absensi.dart';
 import 'absensi.dart';
 import 'home_screen.dart';
 import 'nilai.dart';
 import 'data_guru_anak.dart';
 import 'login.dart';
 
-class Rekapsditkelas extends StatelessWidget {
+class RekapAbsenTKQKelas extends StatelessWidget {
   final String username;
+  final String namaKelas;
 
-  const Rekapsditkelas({super.key, required this.username});
+  const RekapAbsenTKQKelas({
+    super.key,
+    required this.username,
+    required this.namaKelas,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      backgroundColor: Colors.blueGrey[100],
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -85,9 +91,9 @@ class Rekapsditkelas extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 15),
-                  const Text(
-                    "REKAP SISWA SDIT",
-                    style: TextStyle(
+                  Text(
+                    "REKAP ABSEN $namaKelas",
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -99,7 +105,6 @@ class Rekapsditkelas extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Bulan
             const Text(
               "BULAN",
               style: TextStyle(
@@ -110,7 +115,7 @@ class Rekapsditkelas extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Tabel Rekap
+            // Firebase Data
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -126,10 +131,10 @@ class Rekapsditkelas extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
-                            children: [
-                              Container(
+                            children: const [
+                              SizedBox(
                                 width: 40,
-                                child: const Center(
+                                child: Center(
                                   child: Text(
                                     "No",
                                     style: TextStyle(
@@ -138,15 +143,15 @@ class Rekapsditkelas extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              const VerticalDivider(
+                              VerticalDivider(
                                 color: Colors.white,
                                 thickness: 1,
                                 width: 20,
                               ),
                               Expanded(
-                                child: const Center(
+                                child: Center(
                                   child: Text(
-                                    "Nama Guru",
+                                    "Nama siswa",
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold),
@@ -159,58 +164,122 @@ class Rekapsditkelas extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 10),
 
-                  // Data Guru
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              child: const Text(
-                                "1.",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center,
-                              ),
+                  // List dari Firestore
+                  FutureBuilder<QuerySnapshot>(
+                    future: FirebaseFirestore.instance
+                        .collection('sdit_absen')
+                        .where('kelas', isEqualTo: '1')
+                        .get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return const Text("Tidak ada data absensi tersedia.");
+                      }
+
+                      final docs = snapshot.data!.docs;
+
+                      // Hitung rekap absensi berdasarkan nama
+                      Map<String, Map<String, int>> rekap = {};
+
+                      for (var doc in docs) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        final nama = data['nama'] ?? 'Tidak diketahui';
+                        final absen = data['absen'] ?? '';
+
+                        if (!rekap.containsKey(nama)) {
+                          rekap[nama] = {
+                            'HADIR': 0,
+                            'IZIN': 0,
+                            'SAKIT': 0,
+                            'ALPA': 0,
+                          };
+                        }
+
+                        switch (absen) {
+                          case 'H':
+                            rekap[nama]!['HADIR'] = rekap[nama]!['HADIR']! + 1;
+                            break;
+                          case 'I':
+                            rekap[nama]!['IZIN'] = rekap[nama]!['IZIN']! + 1;
+                            break;
+                          case 'S':
+                            rekap[nama]!['SAKIT'] = rekap[nama]!['SAKIT']! + 1;
+                            break;
+                          case 'A':
+                            rekap[nama]!['ALPA'] = rekap[nama]!['ALPA']! + 1;
+                            break;
+                        }
+                      }
+
+                      final siswaList = rekap.keys.toList();
+
+                      return Column(
+                        children: List.generate(siswaList.length, (index) {
+                          final nama = siswaList[index];
+                          final data = rekap[nama]!;
+
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            const SizedBox(width: 10),
-                            const Expanded(
-                              child: Text(
-                                "Gion",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center,
+                            child: ExpansionTile(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
+                              tilePadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              childrenPadding: const EdgeInsets.only(
+                                  left: 20, right: 12, bottom: 12),
+                              title: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 40,
+                                    child: Text(
+                                      "${index + 1}.",
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      nama,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text("HADIR = ${data['HADIR']} Hari"),
+                                      const SizedBox(height: 4),
+                                      Text("IZIN = ${data['IZIN']} Hari"),
+                                      const SizedBox(height: 4),
+                                      Text("SAKIT = ${data['SAKIT']} Hari"),
+                                      const SizedBox(height: 4),
+                                      Text("ALPA = ${data['ALPA']} Hari"),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        const Divider(
-                            color: Colors.grey, thickness: 1, height: 20),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("HADIR = 20 Hari"),
-                              SizedBox(height: 4),
-                              Text("IZIN = 2 Hari"),
-                              SizedBox(height: 4),
-                              Text("SAKIT = 1 Hari"),
-                              SizedBox(height: 4),
-                              Text("ALPA = 0 Hari"),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                          );
+                        }),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -251,7 +320,7 @@ class Rekapsditkelas extends StatelessWidget {
             _navItem(context, "Data Siswa & Guru", Icons.person,
                 DataScreen(username: username), false),
             _navItem(context, "Rekap Absensi", Icons.receipt_long,
-                RekapSiswaSdit(username: username), true),
+                RekapScreen(username: username), true),
           ],
         ),
       ),

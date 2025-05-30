@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:proyek3/screens/rekap_siswa_sdit.dart';
+import 'package:proyek3/screens/rekap_absensi.dart';
 import 'absensi.dart';
 import 'home_screen.dart';
 import 'nilai.dart';
@@ -9,8 +9,10 @@ import 'login.dart';
 
 class Rekapnilaitkqkelas extends StatelessWidget {
   final String username;
+  final String kelas;
 
-  const Rekapnilaitkqkelas({super.key, required this.username});
+  const Rekapnilaitkqkelas(
+      {super.key, required this.username, required this.kelas});
 
   @override
   Widget build(BuildContext context) {
@@ -85,9 +87,9 @@ class Rekapnilaitkqkelas extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 15),
-                  const Text(
-                    "REKAP NILAI TKQ",
-                    style: TextStyle(
+                  Text(
+                    "$kelas",
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -213,7 +215,7 @@ class Rekapnilaitkqkelas extends StatelessWidget {
             _navItem(context, "Data Siswa & Guru", Icons.person,
                 DataScreen(username: username), false),
             _navItem(context, "Rekap Absensi", Icons.receipt_long,
-                RekapSiswaSdit(username: username), false),
+                RekapScreen(username: username), false),
           ],
         ),
       ),

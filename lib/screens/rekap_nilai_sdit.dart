@@ -8,7 +8,6 @@ import 'data_guru_anak.dart';
 import 'login.dart';
 import 'rekap_absensi.dart';
 
-
 class RekapNilaiSdit extends StatelessWidget {
   final String username;
 
@@ -25,7 +24,6 @@ class RekapNilaiSdit extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header
               Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: screenWidth * 0.05,
@@ -108,58 +106,7 @@ class RekapNilaiSdit extends StatelessWidget {
                   ],
                 ),
               ),
-
               SizedBox(height: screenHeight * 0.02),
-
-              // Info Box
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                child: Container(
-                  padding: EdgeInsets.all(screenWidth * 0.035),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        blurRadius: 4,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_today,
-                          color: Colors.black54, size: screenWidth * 0.04),
-                      SizedBox(width: screenWidth * 0.025),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Rabu, 13 Oktober 2023",
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.03,
-                              color: Colors.black54,
-                            ),
-                          ),
-                          Text(
-                            "Pembagian Rapot",
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.035,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: screenHeight * 0.02),
-
-              // Menu Box (Wrap Layout)
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: Wrap(
@@ -167,43 +114,62 @@ class RekapNilaiSdit extends StatelessWidget {
                   runSpacing: screenHeight * 0.02,
                   alignment: WrapAlignment.center,
                   children: [
-                    _menuBox(
-                      "Kelas 1",
-                      Icons.looks_one_outlined,
-                      screenWidth,
-                      screenHeight,
-                      () {
-                        Navigator.push(
+                    _menuBox("Kelas 1", Icons.looks_one_outlined, screenWidth,
+                        screenHeight, () {
+                      Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Rekapnilaisditkelas(
-                              username: username,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                              builder: (context) => Rekapnilaisditkelas(
+                                  username: username, kelas: "1")));
+                    }),
                     _menuBox("Kelas 2", Icons.looks_two_outlined, screenWidth,
-                        screenHeight, () {}),
+                        screenHeight, () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Rekapnilaisditkelas(
+                                  username: username, kelas: "2")));
+                    }),
                     _menuBox("Kelas 3", Icons.looks_3_outlined, screenWidth,
-                        screenHeight, () {}),
+                        screenHeight, () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Rekapnilaisditkelas(
+                                  username: username, kelas: "3")));
+                    }),
                     _menuBox("Kelas 4", Icons.looks_4_outlined, screenWidth,
-                        screenHeight, () {}),
+                        screenHeight, () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Rekapnilaisditkelas(
+                                  username: username, kelas: "4")));
+                    }),
                     _menuBox("Kelas 5", Icons.looks_5_outlined, screenWidth,
-                        screenHeight, () {}),
+                        screenHeight, () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Rekapnilaisditkelas(
+                                  username: username, kelas: "5")));
+                    }),
                     _menuBox("Kelas 6", Icons.looks_6_outlined, screenWidth,
-                        screenHeight, () {}),
+                        screenHeight, () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Rekapnilaisditkelas(
+                                  username: username, kelas: "6")));
+                    }),
                   ],
                 ),
               ),
-
               SizedBox(height: screenHeight * 0.02),
             ],
           ),
         ),
       ),
-
-      // Bottom Navigation
       bottomNavigationBar: Container(
         padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
         decoration: const BoxDecoration(
@@ -240,19 +206,12 @@ class RekapNilaiSdit extends StatelessWidget {
     );
   }
 
-
-  Widget _menuBox(
-    String title,
-    IconData icon,
-    double screenWidth,
-    double screenHeight,
-    VoidCallback onTap, // Tambahkan ini
-  ) {
+  Widget _menuBox(String title, IconData icon, double screenWidth,
+      double screenHeight, VoidCallback onTap) {
     return SizedBox(
       width: (screenWidth - (screenWidth * 0.08 * 2 + screenWidth * 0.04)) / 2,
       height: screenHeight * 0.16,
       child: GestureDetector(
-        // Tambahkan GestureDetector untuk menangani tap
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
@@ -287,31 +246,21 @@ class RekapNilaiSdit extends StatelessWidget {
     );
   }
 
-  Widget _navItem(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Widget page,
-    bool isActive,
-    double screenWidth,
-  ) {
+  Widget _navItem(BuildContext context, String title, IconData icon,
+      Widget page, bool isActive, double screenWidth) {
     return GestureDetector(
       onTap: () {
         if (!isActive) {
           Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => page),
-          );
+              context, MaterialPageRoute(builder: (context) => page));
         }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: screenWidth * 0.06,
-            color: isActive ? Colors.green : Colors.black54,
-          ),
+          Icon(icon,
+              size: screenWidth * 0.06,
+              color: isActive ? Colors.green : Colors.black54),
           SizedBox(height: screenWidth * 0.01),
           Text(
             title,

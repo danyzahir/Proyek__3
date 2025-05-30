@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proyek3/screens/nilai_tkq_nilai.dart';
 import 'absensi.dart';
 import 'home_screen.dart';
 import 'nilai.dart';
 import 'data_guru_anak.dart';
 import 'login.dart';
 import 'rekap_absensi.dart';
-import 'rekap_siswa_sdit_kelas.dart';
 
-class RekapSiswaSdit extends StatelessWidget {
+class NilaiTKQ extends StatelessWidget {
   final String username;
 
-  const RekapSiswaSdit({super.key, required this.username});
+  const NilaiTKQ({super.key, required this.username});
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +97,7 @@ class RekapSiswaSdit extends StatelessWidget {
                     ),
                     SizedBox(height: screenHeight * 0.015),
                     Text(
-                      "Rekap Absen - SDIT",
+                      "NILAI - TKQ",
                       style: TextStyle(
                         fontSize: screenWidth * 0.06,
                         fontWeight: FontWeight.bold,
@@ -158,7 +158,7 @@ class RekapSiswaSdit extends StatelessWidget {
 
               SizedBox(height: screenHeight * 0.02),
 
-              // Menu Box (Wrap Layout)
+              // Menu Box
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: Wrap(
@@ -167,31 +167,89 @@ class RekapSiswaSdit extends StatelessWidget {
                   alignment: WrapAlignment.center,
                   children: [
                     _menuBox(
-                      "Kelas 1",
-                      Icons.looks_one_outlined,
+                      "Kelas A",
+                      CircleAvatar(
+                        backgroundColor: Colors.green,
+                        radius: screenWidth * 0.07,
+                        child: Text(
+                          "A",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                       screenWidth,
                       screenHeight,
                       () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Rekapsditkelas(
+                            builder: (context) => NilaiTKQNilai(
                               username: username,
+                              namaKelas: "KELAS A",
                             ),
                           ),
                         );
                       },
                     ),
-                    _menuBox("Kelas 2", Icons.looks_two_outlined, screenWidth,
-                        screenHeight, () {}),
-                    _menuBox("Kelas 3", Icons.looks_3_outlined, screenWidth,
-                        screenHeight, () {}),
-                    _menuBox("Kelas 4", Icons.looks_4_outlined, screenWidth,
-                        screenHeight, () {}),
-                    _menuBox("Kelas 5", Icons.looks_5_outlined, screenWidth,
-                        screenHeight, () {}),
-                    _menuBox("Kelas 6", Icons.looks_6_outlined, screenWidth,
-                        screenHeight, () {}),
+                    _menuBox(
+                      "Kelas B",
+                      CircleAvatar(
+                        backgroundColor: Colors.green,
+                        radius: screenWidth * 0.07,
+                        child: Text(
+                          "B",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      screenWidth,
+                      screenHeight,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NilaiTKQNilai(
+                              username: username,
+                              namaKelas: "KELAS B",
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    _menuBox(
+                      "Kelas C",
+                      CircleAvatar(
+                        backgroundColor: Colors.green,
+                        radius: screenWidth * 0.07,
+                        child: Text(
+                          "C",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      screenWidth,
+                      screenHeight,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NilaiTKQNilai(
+                              username: username,
+                              namaKelas: "KELAS C",
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -228,11 +286,11 @@ class RekapSiswaSdit extends StatelessWidget {
             _navItem(context, "Absensi", Icons.assignment_ind_rounded,
                 AbsensiScreen(username: username), false, screenWidth),
             _navItem(context, "Nilai", Icons.my_library_books_rounded,
-                NilaiScreen(username: username), false, screenWidth),
+                NilaiScreen(username: username), true, screenWidth),
             _navItem(context, "Data Guru & Anak", Icons.person,
                 DataScreen(username: username), false, screenWidth),
             _navItem(context, "Rekap Absensi", Icons.receipt_long,
-                RekapScreen(username: username), true, screenWidth),
+                RekapScreen(username: username), false, screenWidth),
           ],
         ),
       ),
@@ -241,16 +299,15 @@ class RekapSiswaSdit extends StatelessWidget {
 
   Widget _menuBox(
     String title,
-    IconData icon,
+    Widget iconWidget,
     double screenWidth,
     double screenHeight,
-    VoidCallback onTap, // Tambahkan ini
+    VoidCallback onTap,
   ) {
     return SizedBox(
       width: (screenWidth - (screenWidth * 0.08 * 2 + screenWidth * 0.04)) / 2,
       height: screenHeight * 0.16,
       child: GestureDetector(
-        // Tambahkan GestureDetector untuk menangani tap
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
@@ -268,7 +325,7 @@ class RekapSiswaSdit extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: screenWidth * 0.09, color: Colors.black),
+              iconWidget,
               SizedBox(height: screenWidth * 0.01),
               Text(
                 title,

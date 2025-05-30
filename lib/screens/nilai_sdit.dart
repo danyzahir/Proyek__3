@@ -96,7 +96,7 @@ class NilaiSDIT extends StatelessWidget {
                     ),
                     SizedBox(height: screenHeight * 0.015),
                     Text(
-                      "NILAI SDIT",
+                      "NILAI - SDIT",
                       style: TextStyle(
                         fontSize: screenWidth * 0.06,
                         fontWeight: FontWeight.bold,
@@ -159,7 +159,7 @@ class NilaiSDIT extends StatelessWidget {
                   runSpacing: screenHeight * 0.02,
                   alignment: WrapAlignment.center,
                   children: List.generate(6, (index) {
-                    final kelas = "NILAI KELAS ${index + 1}";
+                    final kelas = "KELAS ${index + 1}";
                     final iconList = [
                       Icons.looks_one_outlined,
                       Icons.looks_two_outlined,

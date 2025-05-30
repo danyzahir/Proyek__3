@@ -11,8 +11,10 @@ import 'rekap_absensi.dart';
 
 class DataAnakSDITKelas extends StatefulWidget {
   final String username;
+  final String kelas;
 
-  const DataAnakSDITKelas({super.key, required this.username});
+  const DataAnakSDITKelas(
+      {super.key, required this.username, required this.kelas});
 
   @override
   State<DataAnakSDITKelas> createState() => _DataAnakSDITKelasState();
@@ -25,18 +27,18 @@ class _DataAnakSDITKelasState extends State<DataAnakSDITKelas> {
   @override
   void initState() {
     super.initState();
-    fetchSiswaKelas1();
+    fetchSiswaByKelas();
   }
 
-  Future<void> fetchSiswaKelas1() async {
+  Future<void> fetchSiswaByKelas() async {
     try {
       final snapshot = await FirebaseFirestore.instance
           .collection('anak_sdit')
-          .where('kelas', isEqualTo: '1')
+          .where('kelas', isEqualTo: widget.kelas)
           .get();
 
       final List<Map<String, String>> dataAnak = snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         return {
           'nama': data['nama']?.toString() ?? '',
           'kelas': data['kelas']?.toString() ?? '',
@@ -166,7 +168,7 @@ class _DataAnakSDITKelasState extends State<DataAnakSDITKelas> {
           ),
           SizedBox(height: screenHeight * 0.015),
           Text(
-            "Data Anak - SDIT (Kelas 1)",
+            "Data Anak - SDIT (Kelas ${widget.kelas})",
             style: TextStyle(
               fontSize: screenWidth * 0.06,
               fontWeight: FontWeight.bold,
@@ -190,7 +192,7 @@ class _DataAnakSDITKelasState extends State<DataAnakSDITKelas> {
           children: [
             _buildHeaderCell('No', screenWidth, flex: 1),
             _buildHeaderCell('Nama', screenWidth, flex: 3),
-            _buildHeaderCell('kelas', screenWidth, flex: 4),
+            _buildHeaderCell('Kelas', screenWidth, flex: 4),
           ],
         ),
       ),
@@ -216,8 +218,7 @@ class _DataAnakSDITKelasState extends State<DataAnakSDITKelas> {
     );
   }
 
-  Widget _buildRow(
-      int index, String nama, String asal, double screenWidth) {
+  Widget _buildRow(int index, String nama, String kelas, double screenWidth) {
     return Container(
       decoration: BoxDecoration(
         color: index % 2 == 0 ? Colors.white : Colors.grey[100],
@@ -252,7 +253,7 @@ class _DataAnakSDITKelasState extends State<DataAnakSDITKelas> {
             flex: 4,
             child: Center(
               child: Text(
-                asal,
+                kelas,
                 style: TextStyle(fontSize: screenWidth * 0.035),
               ),
             ),
@@ -290,9 +291,9 @@ class _DataAnakSDITKelasState extends State<DataAnakSDITKelas> {
           _navItem(context, "Nilai", Icons.my_library_books_rounded,
               NilaiScreen(username: widget.username), false, screenWidth),
           _navItem(context, "Data Guru & Anak", Icons.person,
-              DataScreen(username: widget.username), false, screenWidth),
+              DataScreen(username: widget.username), true, screenWidth),
           _navItem(context, "Rekap Absensi", Icons.receipt_long,
-              RekapScreen(username: widget.username), true, screenWidth),
+              RekapScreen(username: widget.username), false, screenWidth),
         ],
       ),
     );
@@ -304,9 +305,7 @@ class _DataAnakSDITKelasState extends State<DataAnakSDITKelas> {
       onTap: () {
         if (!isActive) {
           Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => page),
-          );
+              context, MaterialPageRoute(builder: (context) => page));
         }
       },
       child: Column(

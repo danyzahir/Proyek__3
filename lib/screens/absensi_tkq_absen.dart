@@ -8,18 +8,18 @@ import 'data_guru_anak.dart';
 import 'login.dart';
 import 'rekap_absensi.dart';
 
-class AbsensiSDITAbsen extends StatefulWidget {
+class AbsensiTKQAbsen extends StatefulWidget {
   final String username;
   final String kelas;
 
-  const AbsensiSDITAbsen(
+  const AbsensiTKQAbsen(
       {super.key, required this.username, required this.kelas});
 
   @override
-  State<AbsensiSDITAbsen> createState() => _AbsensiSDITAbsenState();
+  State<AbsensiTKQAbsen> createState() => _AbsensiTKQAbsenState();
 }
 
-class _AbsensiSDITAbsenState extends State<AbsensiSDITAbsen> {
+class _AbsensiTKQAbsenState extends State<AbsensiTKQAbsen> {
   List<String> siswa = [];
   bool isLoading = true;
   final Map<int, String> pilihanAbsensi = {};
@@ -201,7 +201,7 @@ class _AbsensiSDITAbsenState extends State<AbsensiSDITAbsen> {
           ),
           SizedBox(height: screenHeight * 0.015),
           Text(
-            "KELAS ${widget.kelas}",
+            "${widget.kelas}",
             style: TextStyle(
               fontSize: screenWidth * 0.06,
               fontWeight: FontWeight.bold,

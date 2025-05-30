@@ -6,6 +6,7 @@ import 'data_guru_anak.dart';
 import 'rekap_absensi.dart';
 import '../widgets/user_menu.dart';
 import 'absensi_sdit.dart';
+import 'absensi_tkq.dart';
 
 class AbsensiScreen extends StatelessWidget {
   final String username;
@@ -23,7 +24,6 @@ class AbsensiScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header
               Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: screenWidth * 0.05,
@@ -73,10 +73,7 @@ class AbsensiScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               SizedBox(height: screenHeight * 0.02),
-
-              // Info Box
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: Container(
@@ -121,10 +118,7 @@ class AbsensiScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
               SizedBox(height: screenHeight * 0.02),
-
-              // Menu Box
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: Wrap(
@@ -164,23 +158,29 @@ class AbsensiScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    SizedBox(
-                      width: screenWidth * 0.399,
-                      height: screenHeight * 0.161,
-                      child: _menuItem(
-                          "Absensi TKQ", Icons.people_alt, screenWidth),
+                    _menuCard(
+                      context,
+                      "Absensi TKQ",
+                      Icons.people_alt,
+                      screenWidth,
+                      screenHeight,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AbsenTKQ(username: username),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
-
               SizedBox(height: screenHeight * 0.02),
             ],
           ),
         ),
       ),
-
-      // Bottom Navigation
       bottomNavigationBar: Container(
         padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
         decoration: const BoxDecoration(

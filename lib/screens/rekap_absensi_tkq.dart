@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:proyek3/screens/nilai_tkq.dart';
-import 'home_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proyek3/screens/rekap_absensi_tkq_kelas.dart';
 import 'absensi.dart';
+import 'home_screen.dart';
+import 'nilai.dart';
 import 'data_guru_anak.dart';
+import 'login.dart';
 import 'rekap_absensi.dart';
-import '../../widgets/user_menu.dart';
-import 'nilai_sdit.dart';
-import 'rekap_nilai_sdit.dart';
-import 'rekap_nilai_tkq.dart';
 
-class NilaiScreen extends StatelessWidget {
+class RekapAbsenTKQ extends StatelessWidget {
   final String username;
 
-  const NilaiScreen({super.key, required this.username});
+  const RekapAbsenTKQ({super.key, required this.username});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +19,7 @@ class NilaiScreen extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Colors.blueGrey[100],
+      backgroundColor: Colors.grey[200],
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -58,14 +57,47 @@ class NilaiScreen extends StatelessWidget {
                               ),
                             ),
                             SizedBox(width: screenWidth * 0.02),
-                            UserMenu(username: username),
+                            PopupMenuButton<String>(
+                              onSelected: (value) async {
+                                if (value == 'logout') {
+                                  await FirebaseAuth.instance.signOut();
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const LoginScreen(),
+                                    ),
+                                    (route) => false,
+                                  );
+                                }
+                              },
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'logout',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.logout, color: Colors.red),
+                                      SizedBox(width: 10),
+                                      Text('Logout'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              child: const CircleAvatar(
+                                backgroundColor: Colors.white,
+                                radius: 18,
+                                child: Icon(Icons.person, color: Colors.black),
+                              ),
+                            ),
                           ],
                         ),
                       ],
                     ),
                     SizedBox(height: screenHeight * 0.015),
                     Text(
-                      "NILAI",
+                      "REKAP ABSEN - TKQ",
                       style: TextStyle(
                         fontSize: screenWidth * 0.06,
                         fontWeight: FontWeight.bold,
@@ -134,64 +166,86 @@ class NilaiScreen extends StatelessWidget {
                   runSpacing: screenHeight * 0.02,
                   alignment: WrapAlignment.center,
                   children: [
-                    _menuCard(
-                      context,
-                      "Nilai SDIT",
-                      Icons.my_library_books_rounded,
+                    _menuBox(
+                      "Kelas A",
+                      CircleAvatar(
+                        backgroundColor: Colors.green,
+                        radius: screenWidth * 0.07,
+                        child: Text(
+                          "A",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                       screenWidth,
                       screenHeight,
                       () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => NilaiSDIT(username: username),
+                            builder: (context) => RekapAbsenTKQKelas(
+                              username: username,
+                              namaKelas: "KELAS A",
+                            ),
                           ),
                         );
                       },
                     ),
-                    _menuCard(
-                      context,
-                      "Nilai TKQ",
-                      Icons.my_library_books_rounded,
+                    _menuBox(
+                      "Kelas B",
+                      CircleAvatar(
+                        backgroundColor: Colors.green,
+                        radius: screenWidth * 0.07,
+                        child: Text(
+                          "B",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                       screenWidth,
                       screenHeight,
                       () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => NilaiTKQ(username: username),
+                            builder: (context) => RekapAbsenTKQKelas(
+                              username: username,
+                              namaKelas: "KELAS B",
+                            ),
                           ),
                         );
                       },
                     ),
-                    _menuCard(
-                      context,
-                      "Rekap Nilai SDIT",
-                      Icons.people_alt,
-                      screenWidth,
-                      screenHeight,
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                RekapNilaiSdit(username: username),
+                    _menuBox(
+                      "Kelas C",
+                      CircleAvatar(
+                        backgroundColor: Colors.green,
+                        radius: screenWidth * 0.07,
+                        child: Text(
+                          "C",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
                           ),
-                        );
-                      },
-                    ),
-                    _menuCard(
-                      context,
-                      "Rekap Nilai TKQ",
-                      Icons.people_alt,
+                        ),
+                      ),
                       screenWidth,
                       screenHeight,
                       () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                RekapNilaiTkq(username: username),
+                            builder: (context) => RekapAbsenTKQKelas(
+                              username: username,
+                              namaKelas: "KELAS C",
+                            ),
                           ),
                         );
                       },
@@ -232,69 +286,64 @@ class NilaiScreen extends StatelessWidget {
             _navItem(context, "Absensi", Icons.assignment_ind_rounded,
                 AbsensiScreen(username: username), false, screenWidth),
             _navItem(context, "Nilai", Icons.my_library_books_rounded,
-                NilaiScreen(username: username), true, screenWidth),
+                NilaiScreen(username: username), false, screenWidth),
             _navItem(context, "Data Guru & Anak", Icons.person,
                 DataScreen(username: username), false, screenWidth),
             _navItem(context, "Rekap Absensi", Icons.receipt_long,
-                RekapScreen(username: username), false, screenWidth),
+                RekapScreen(username: username), true, screenWidth),
           ],
         ),
       ),
     );
   }
 
-  Widget _menuCard(BuildContext context, String title, IconData icon,
-      double screenWidth, double screenHeight, VoidCallback onTap) {
+  Widget _menuBox(
+    String title,
+    Widget iconWidget,
+    double screenWidth,
+    double screenHeight,
+    VoidCallback onTap,
+  ) {
     return SizedBox(
       width: (screenWidth - (screenWidth * 0.08 * 2 + screenWidth * 0.04)) / 2,
       height: screenHeight * 0.16,
       child: GestureDetector(
         onTap: onTap,
-        child: _menuItem(title, icon, screenWidth),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                blurRadius: 4,
+                spreadRadius: 2,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              iconWidget,
+              SizedBox(height: screenWidth * 0.01),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.03,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _menuItem(String title, IconData icon, double screenWidth) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            blurRadius: 4,
-            spreadRadius: 2,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: screenWidth * 0.09, color: Colors.black),
-          SizedBox(height: screenWidth * 0.01),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: screenWidth * 0.03,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _navItem(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Widget page,
-    bool isActive,
-    double screenWidth,
-  ) {
+  Widget _navItem(BuildContext context, String title, IconData icon,
+      Widget page, bool isActive, double screenWidth) {
     return GestureDetector(
       onTap: () {
         if (!isActive) {
@@ -307,11 +356,9 @@ class NilaiScreen extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: screenWidth * 0.06,
-            color: isActive ? Colors.green : Colors.black54,
-          ),
+          Icon(icon,
+              size: screenWidth * 0.06,
+              color: isActive ? Colors.green : Colors.black54),
           SizedBox(height: screenWidth * 0.01),
           Text(
             title,

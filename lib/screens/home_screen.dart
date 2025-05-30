@@ -22,7 +22,6 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: Colors.blueGrey[100],
       body: Column(
         children: [
-          // Header
           Container(
             padding: EdgeInsets.symmetric(
               horizontal: screenWidth * 0.05,
@@ -100,10 +99,7 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-
           SizedBox(height: screenHeight * 0.015),
-
-          // Info Agenda dari Firestore
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Align(
@@ -119,12 +115,13 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          SizedBox(
-            height: 75,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('agenda')
                   .orderBy('tanggal', descending: false)
+                  .limit(1)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -132,78 +129,62 @@ class HomeScreen extends StatelessWidget {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("Tidak ada agenda."));
+                  return const Text("Tidak ada agenda.");
                 }
 
-                final agendaDocs = snapshot.data!.docs;
+                final data =
+                    snapshot.data!.docs.first.data() as Map<String, dynamic>;
+                final DateTime tanggal =
+                    (data['tanggal'] as Timestamp).toDate();
+                final String tanggalStr =
+                    "${tanggal.day.toString().padLeft(2, '0')}-${tanggal.month.toString().padLeft(2, '0')}-${tanggal.year}";
+                final String judul = data['nama'] ?? "Tanpa Judul";
 
-                return ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  itemCount: agendaDocs.length,
-                  itemBuilder: (context, index) {
-                    final data = agendaDocs[index].data() as Map<String, dynamic>;
-                    final DateTime tanggal = (data['tanggal'] as Timestamp).toDate();
-                    final String tanggalStr =
-                        "${tanggal.day.toString().padLeft(2, '0')}-${tanggal.month.toString().padLeft(2, '0')}-${tanggal.year}";
-                    final String judul = data['nama'] ?? "Tanpa Judul";
-
-                    return Container(
-                      width: 180,
-                      margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            blurRadius: 3,
-                            spreadRadius: 1,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
+                return Container(
+                  padding: EdgeInsets.all(screenWidth * 0.035),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        blurRadius: 4,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 2),
                       ),
-                      child: Column(
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today,
+                          color: Colors.black54, size: screenWidth * 0.04),
+                      SizedBox(width: screenWidth * 0.025),
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.calendar_today,
-                                  size: 14, color: Colors.black54),
-                              const SizedBox(width: 6),
-                              Text(
-                                tanggalStr,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            tanggalStr,
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.03,
+                              color: Colors.black54,
+                            ),
                           ),
-                          const SizedBox(height: 4),
                           Text(
                             judul,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.035,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                    );
-                  },
+                    ],
+                  ),
                 );
               },
             ),
           ),
-
           SizedBox(height: screenHeight * 0.02),
-
-          // Menu Box menggunakan Wrap
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
@@ -257,9 +238,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-
           SizedBox(height: screenHeight * 0.015),
-
           Text(
             "© 2024 Powered by Nahdlatut Tujjar",
             style:

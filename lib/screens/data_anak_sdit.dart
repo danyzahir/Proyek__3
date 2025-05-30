@@ -24,7 +24,6 @@ class DataAnakSDIT extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header
               Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: screenWidth * 0.05,
@@ -107,58 +106,7 @@ class DataAnakSDIT extends StatelessWidget {
                   ],
                 ),
               ),
-
               SizedBox(height: screenHeight * 0.02),
-
-              // Info Box
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                child: Container(
-                  padding: EdgeInsets.all(screenWidth * 0.035),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        blurRadius: 4,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_today,
-                          color: Colors.black54, size: screenWidth * 0.04),
-                      SizedBox(width: screenWidth * 0.025),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Rabu, 13 Oktober 2023",
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.03,
-                              color: Colors.black54,
-                            ),
-                          ),
-                          Text(
-                            "Pembagian Rapot",
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.035,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: screenHeight * 0.02),
-
-              // Menu Box (Wrap Layout)
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: Wrap(
@@ -166,43 +114,74 @@ class DataAnakSDIT extends StatelessWidget {
                   runSpacing: screenHeight * 0.02,
                   alignment: WrapAlignment.center,
                   children: [
-                    _menuBox(
-                      "Kelas 1",
-                      Icons.looks_one_outlined,
-                      screenWidth,
-                      screenHeight,
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DataAnakSDITKelas(
-                              username: username,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    _menuBox("Kelas 1", Icons.looks_one_outlined, screenWidth,
+                        screenHeight, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DataAnakSDITKelas(username: username, kelas: "1"),
+                        ),
+                      );
+                    }),
                     _menuBox("Kelas 2", Icons.looks_two_outlined, screenWidth,
-                        screenHeight, () {}),
+                        screenHeight, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DataAnakSDITKelas(username: username, kelas: "2"),
+                        ),
+                      );
+                    }),
                     _menuBox("Kelas 3", Icons.looks_3_outlined, screenWidth,
-                        screenHeight, () {}),
+                        screenHeight, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DataAnakSDITKelas(username: username, kelas: "3"),
+                        ),
+                      );
+                    }),
                     _menuBox("Kelas 4", Icons.looks_4_outlined, screenWidth,
-                        screenHeight, () {}),
+                        screenHeight, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DataAnakSDITKelas(username: username, kelas: "4"),
+                        ),
+                      );
+                    }),
                     _menuBox("Kelas 5", Icons.looks_5_outlined, screenWidth,
-                        screenHeight, () {}),
+                        screenHeight, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DataAnakSDITKelas(username: username, kelas: "5"),
+                        ),
+                      );
+                    }),
                     _menuBox("Kelas 6", Icons.looks_6_outlined, screenWidth,
-                        screenHeight, () {}),
+                        screenHeight, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DataAnakSDITKelas(username: username, kelas: "6"),
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ),
-
               SizedBox(height: screenHeight * 0.02),
             ],
           ),
         ),
       ),
-
-      // Bottom Navigation
       bottomNavigationBar: Container(
         padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
         decoration: const BoxDecoration(
@@ -230,27 +209,21 @@ class DataAnakSDIT extends StatelessWidget {
             _navItem(context, "Nilai", Icons.my_library_books_rounded,
                 NilaiScreen(username: username), false, screenWidth),
             _navItem(context, "Data Guru & Anak", Icons.person,
-                DataScreen(username: username), false, screenWidth),
+                DataScreen(username: username), true, screenWidth),
             _navItem(context, "Rekap Absensi", Icons.receipt_long,
-                RekapScreen(username: username), true, screenWidth),
+                RekapScreen(username: username), false, screenWidth),
           ],
         ),
       ),
     );
   }
 
-  Widget _menuBox(
-    String title,
-    IconData icon,
-    double screenWidth,
-    double screenHeight,
-    VoidCallback onTap, // Tambahkan ini
-  ) {
+  Widget _menuBox(String title, IconData icon, double screenWidth,
+      double screenHeight, VoidCallback onTap) {
     return SizedBox(
       width: (screenWidth - (screenWidth * 0.08 * 2 + screenWidth * 0.04)) / 2,
       height: screenHeight * 0.16,
       child: GestureDetector(
-        // Tambahkan GestureDetector untuk menangani tap
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
@@ -291,9 +264,7 @@ class DataAnakSDIT extends StatelessWidget {
       onTap: () {
         if (!isActive) {
           Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => page),
-          );
+              context, MaterialPageRoute(builder: (context) => page));
         }
       },
       child: Column(
