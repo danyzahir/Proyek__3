@@ -13,8 +13,11 @@ class DataAnakSDITKelas extends StatefulWidget {
   final String username;
   final String kelas;
 
-  const DataAnakSDITKelas(
-      {super.key, required this.username, required this.kelas});
+  const DataAnakSDITKelas({
+    super.key,
+    required this.username,
+    required this.kelas,
+  });
 
   @override
   State<DataAnakSDITKelas> createState() => _DataAnakSDITKelasState();
