@@ -88,7 +88,70 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
     }
   }
 
-  Future<void> _simpanAbsensi(String status) async {
+Future<void> _pilihUnit(String status) async {
+  Navigator.pop(context); // tutup modal status H/I/S
+
+  String? selectedUnit = await showModalBottomSheet<String>(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) => Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            "Pilih Unit",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context, "TKQ"),
+                icon: const Icon(Icons.school),
+                label: const Text("TKQ"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  foregroundColor: Colors.white, // Teks & ikon jadi putih
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context, "SDIT"),
+                icon: const Icon(Icons.menu_book),
+                label: const Text("SDIT"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigo,
+                  foregroundColor: Colors.white, // Teks & ikon jadi putih
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+        ],
+      ),
+    ),
+  );
+
+  if (selectedUnit != null) {
+    await _simpanAbsensi(status, selectedUnit);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Absensi disimpan: $status ($selectedUnit)')),
+    );
+  }
+}
+
+  Future<void> _simpanAbsensi(String status, String unit) async {
     final tanggal = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final docRef = FirebaseFirestore.instance
         .collection('absensi_guru')
@@ -98,6 +161,7 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
       'nama': widget.username,
       'tanggal': tanggal,
       'status': status,
+      'unit': unit,
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
@@ -108,13 +172,7 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
         backgroundColor: color,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      onPressed: () async {
-        Navigator.pop(context);
-        await _simpanAbsensi(status);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Absensi berhasil disimpan sebagai $status')),
-        );
-      },
+      onPressed: () => _pilihUnit(status),
       child: Text(status, style: const TextStyle(fontSize: 16)),
     );
   }
