@@ -26,7 +26,6 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () async {
-      await _cekDanIsiAlpa();
       await _openCamera();
     });
   }
@@ -68,8 +67,7 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text('Pilih Status Absensi:',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -102,23 +100,6 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
       'status': status,
       'timestamp': FieldValue.serverTimestamp(),
     });
-  }
-
-  Future<void> _cekDanIsiAlpa() async {
-    final tanggal = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final docRef = FirebaseFirestore.instance
-        .collection('absensi_guru')
-        .doc('${widget.username}_$tanggal');
-
-    final snapshot = await docRef.get();
-    if (!snapshot.exists) {
-      await docRef.set({
-        'nama': widget.username,
-        'tanggal': tanggal,
-        'status': 'A',
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-    }
   }
 
   Widget _statusButton(String status, Color color) {
@@ -165,8 +146,7 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
                     Row(
                       children: [
                         Text(widget.username,
-                            style: const TextStyle(
-                                fontSize: 16, color: Colors.white)),
+                            style: const TextStyle(fontSize: 16, color: Colors.white)),
                         const SizedBox(width: 10),
                         const CircleAvatar(
                           backgroundColor: Colors.white,
@@ -252,49 +232,24 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _navItem("Dashboard", Icons.home, () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen(username: widget.username),
-                    ),
-                  );
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (context) => HomeScreen(username: widget.username)));
                 }, false),
                 _navItem("Absensi", Icons.assignment_ind_rounded, () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          AbsensiScreen(username: widget.username),
-                    ),
-                  );
+                  Navigator.pushReplacement(context, MaterialPageRoute(
+                      builder: (context) => AbsensiScreen(username: widget.username)));
                 }, true),
                 _navItem("Nilai", Icons.my_library_books_rounded, () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          NilaiScreen(username: widget.username),
-                    ),
-                  );
+                  Navigator.pushReplacement(context, MaterialPageRoute(
+                      builder: (context) => NilaiScreen(username: widget.username)));
                 }, false),
                 _navItem("Data Guru & Anak", Icons.person, () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          DataScreen(username: widget.username),
-                    ),
-                  );
+                  Navigator.pushReplacement(context, MaterialPageRoute(
+                      builder: (context) => DataScreen(username: widget.username)));
                 }, false),
                 _navItem("Rekap Absensi", Icons.receipt_long, () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          RekapScreen(username: widget.username),
-                    ),
-                  );
+                  Navigator.pushReplacement(context, MaterialPageRoute(
+                      builder: (context) => RekapScreen(username: widget.username)));
                 }, false),
               ],
             ),
@@ -325,15 +280,13 @@ class _AbsensiGuruPageState extends State<AbsensiGuruPage> {
           const SizedBox(height: 5),
           Text(title,
               textAlign: TextAlign.center,
-              style:
-                  const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
   }
 
-  Widget _navItem(
-      String title, IconData icon, VoidCallback onTap, bool isActive) {
+  Widget _navItem(String title, IconData icon, VoidCallback onTap, bool isActive) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
