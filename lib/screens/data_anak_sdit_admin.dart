@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proyek3/screens/data_anak_sdit_kelas_admin.dart';
-import 'absensi.dart';
-import 'home_screen.dart';
-import 'nilai.dart';
-import 'data_guru_anak.dart';
 import 'login.dart';
-import 'rekap_absensi.dart';
 
 class DataAnakSDITAdmin extends StatelessWidget {
   final String username;
@@ -96,7 +91,7 @@ class DataAnakSDITAdmin extends StatelessWidget {
                     ),
                     SizedBox(height: screenHeight * 0.015),
                     Text(
-                      "ABSENSI - SDIT",
+                      "DATA MURID - SDIT",
                       style: TextStyle(
                         fontSize: screenWidth * 0.06,
                         fontWeight: FontWeight.bold,
@@ -194,39 +189,6 @@ class DataAnakSDITAdmin extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey,
-              blurRadius: 5,
-              spreadRadius: 2,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _navItem(context, "Dashboard", Icons.home,
-                HomeScreen(username: username), false, screenWidth),
-            _navItem(context, "Absensi", Icons.assignment_ind_rounded,
-                AbsensiScreen(username: username), true, screenWidth),
-            _navItem(context, "Nilai", Icons.my_library_books_rounded,
-                NilaiScreen(username: username), false, screenWidth),
-            _navItem(context, "Data Guru & Anak", Icons.person,
-                DataScreen(username: username), false, screenWidth),
-            _navItem(context, "Rekap Absensi", Icons.receipt_long,
-                RekapScreen(username: username), false, screenWidth),
-          ],
-        ),
-      ),
     );
   }
 
@@ -271,38 +233,6 @@ class DataAnakSDITAdmin extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _navItem(BuildContext context, String title, IconData icon,
-      Widget page, bool isActive, double screenWidth) {
-    return GestureDetector(
-      onTap: () {
-        if (!isActive) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => page),
-          );
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon,
-              size: screenWidth * 0.06,
-              color: isActive ? Colors.green : Colors.black54),
-          SizedBox(height: screenWidth * 0.01),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: screenWidth * 0.025,
-              fontWeight: FontWeight.w600,
-              color: isActive ? Colors.green : Colors.black54,
-            ),
-          ),
-        ],
       ),
     );
   }
