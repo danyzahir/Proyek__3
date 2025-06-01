@@ -74,54 +74,6 @@ class DataScreenAdmin extends StatelessWidget {
 
               SizedBox(height: screenHeight * 0.02),
 
-              // Info Box
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                child: Container(
-                  padding: EdgeInsets.all(screenWidth * 0.035),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        blurRadius: 4,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_today,
-                          color: Colors.black54, size: screenWidth * 0.04),
-                      SizedBox(width: screenWidth * 0.025),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Senin, 15 April 2024",
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.03,
-                              color: Colors.black54,
-                            ),
-                          ),
-                          Text(
-                            "Penerimaan Siswa Baru",
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.035,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: screenHeight * 0.02),
-
               // Menu
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
