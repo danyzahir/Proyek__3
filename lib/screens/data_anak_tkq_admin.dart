@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:proyek3/screens/data_anak_sdit_kelas_admin.dart';
-import 'absensi.dart';
-import 'home_screen.dart';
-import 'nilai.dart';
-import 'data_guru_anak.dart';
+import 'package:proyek3/screens/data_anak_tkq_kelas_admin.dart';
 import 'login.dart';
-import 'rekap_absensi.dart';
 
-class DataAnakSDITAdmin extends StatelessWidget {
+class DataAnakTKQAdmin extends StatelessWidget {
   final String username;
 
-  const DataAnakSDITAdmin({super.key, required this.username});
+  const DataAnakTKQAdmin({super.key, required this.username});
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +14,12 @@ class DataAnakSDITAdmin extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Colors.blueGrey[100],
+      backgroundColor: Colors.grey[200],
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // Header
               Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: screenWidth * 0.05,
@@ -96,7 +92,7 @@ class DataAnakSDITAdmin extends StatelessWidget {
                     ),
                     SizedBox(height: screenHeight * 0.015),
                     Text(
-                      "ABSENSI - SDIT",
+                      "DATA ANAK - TKQ",
                       style: TextStyle(
                         fontSize: screenWidth * 0.06,
                         fontWeight: FontWeight.bold,
@@ -106,7 +102,10 @@ class DataAnakSDITAdmin extends StatelessWidget {
                   ],
                 ),
               ),
+
               SizedBox(height: screenHeight * 0.02),
+
+              // Menu Box
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: Wrap(
@@ -114,117 +113,97 @@ class DataAnakSDITAdmin extends StatelessWidget {
                   runSpacing: screenHeight * 0.02,
                   alignment: WrapAlignment.center,
                   children: [
-                    _menuBox("Kelas 1", Icons.looks_one_outlined, screenWidth,
-                        screenHeight, () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DataAnakSDITAdminKelas(
-                            username: username,
-                            kelas: "1",
+                    _menuBox(
+                      "Kelas A",
+                      CircleAvatar(
+                        backgroundColor: Colors.green,
+                        radius: screenWidth * 0.07,
+                        child: Text(
+                          "A",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      );
-                    }),
-                    _menuBox("Kelas 2", Icons.looks_two_outlined, screenWidth,
-                        screenHeight, () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DataAnakSDITAdminKelas(
-                            username: username,
-                            kelas: "2",
+                      ),
+                      screenWidth,
+                      screenHeight,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DataAnakTKQAdminKelas(
+                              username: username,
+                              kelas: "KELAS A",
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    _menuBox(
+                      "Kelas B",
+                      CircleAvatar(
+                        backgroundColor: Colors.green,
+                        radius: screenWidth * 0.07,
+                        child: Text(
+                          "B",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      );
-                    }),
-                    _menuBox("Kelas 3", Icons.looks_3_outlined, screenWidth,
-                        screenHeight, () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DataAnakSDITAdminKelas(
-                            username: username,
-                            kelas: "3",
+                      ),
+                      screenWidth,
+                      screenHeight,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DataAnakTKQAdminKelas(
+                              username: username,
+                              kelas: "KELAS B",
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    _menuBox(
+                      "Kelas C",
+                      CircleAvatar(
+                        backgroundColor: Colors.green,
+                        radius: screenWidth * 0.07,
+                        child: Text(
+                          "C",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      );
-                    }),
-                    _menuBox("Kelas 4", Icons.looks_4_outlined, screenWidth,
-                        screenHeight, () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DataAnakSDITAdminKelas(
-                            username: username,
-                            kelas: "4",
+                      ),
+                      screenWidth,
+                      screenHeight,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DataAnakTKQAdminKelas(
+                              username: username,
+                              kelas: "KELAS C",
+                            ),
                           ),
-                        ),
-                      );
-                    }),
-                    _menuBox("Kelas 5", Icons.looks_5_outlined, screenWidth,
-                        screenHeight, () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DataAnakSDITAdminKelas(
-                            username: username,
-                            kelas: "5",
-                          ),
-                        ),
-                      );
-                    }),
-                    _menuBox("Kelas 6", Icons.looks_6_outlined, screenWidth,
-                        screenHeight, () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DataAnakSDITAdminKelas(
-                            username: username,
-                            kelas: "6",
-                          ),
-                        ),
-                      );
-                    }),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
+
               SizedBox(height: screenHeight * 0.02),
             ],
           ),
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey,
-              blurRadius: 5,
-              spreadRadius: 2,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _navItem(context, "Dashboard", Icons.home,
-                HomeScreen(username: username), false, screenWidth),
-            _navItem(context, "Absensi", Icons.assignment_ind_rounded,
-                AbsensiScreen(username: username), true, screenWidth),
-            _navItem(context, "Nilai", Icons.my_library_books_rounded,
-                NilaiScreen(username: username), false, screenWidth),
-            _navItem(context, "Data Guru & Anak", Icons.person,
-                DataScreen(username: username), false, screenWidth),
-            _navItem(context, "Rekap Absensi", Icons.receipt_long,
-                RekapScreen(username: username), false, screenWidth),
-          ],
         ),
       ),
     );
@@ -232,7 +211,7 @@ class DataAnakSDITAdmin extends StatelessWidget {
 
   Widget _menuBox(
     String title,
-    IconData icon,
+    Widget iconWidget,
     double screenWidth,
     double screenHeight,
     VoidCallback onTap,
@@ -258,7 +237,7 @@ class DataAnakSDITAdmin extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: screenWidth * 0.09, color: Colors.black),
+              iconWidget,
               SizedBox(height: screenWidth * 0.01),
               Text(
                 title,
@@ -271,38 +250,6 @@ class DataAnakSDITAdmin extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _navItem(BuildContext context, String title, IconData icon,
-      Widget page, bool isActive, double screenWidth) {
-    return GestureDetector(
-      onTap: () {
-        if (!isActive) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => page),
-          );
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon,
-              size: screenWidth * 0.06,
-              color: isActive ? Colors.green : Colors.black54),
-          SizedBox(height: screenWidth * 0.01),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: screenWidth * 0.025,
-              fontWeight: FontWeight.w600,
-              color: isActive ? Colors.green : Colors.black54,
-            ),
-          ),
-        ],
       ),
     );
   }

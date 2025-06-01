@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:proyek3/screens/data_anak_tkq_admin.dart';
+import 'package:proyek3/screens/data_guru_tkq_admin.dart';
 import '../widgets/user_menu.dart';
 import 'data_guru_sdit_admin.dart';
 import 'data_anak_sdit_admin.dart';
@@ -140,7 +142,16 @@ class DataScreenAdmin extends StatelessWidget {
                       );
                     }),
                     _menuCard(context, "Data Guru TKQ", Icons.people,
-                        screenWidth, screenHeight, () {}),
+                        screenWidth, screenHeight, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DataGuruTKQAdmin(
+                            username: username,
+                          ),
+                        ),
+                      );
+                    }),
                     _menuCard(context, "Data Murid SDIT", Icons.people,
                         screenWidth, screenHeight, () {
                       Navigator.push(
@@ -153,7 +164,16 @@ class DataScreenAdmin extends StatelessWidget {
                       );
                     }),
                     _menuCard(context, "Data Murid TKQ", Icons.people,
-                        screenWidth, screenHeight, () {}),
+                        screenWidth, screenHeight, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DataAnakTKQAdmin(
+                            username: username,
+                          ),
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ),

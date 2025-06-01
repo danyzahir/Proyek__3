@@ -99,16 +99,16 @@ class AdminDashboard extends StatelessWidget {
             ),
           ),
 
-          // Firebase Info Agenda (rapi)
-          const SizedBox(height: 10),
+          SizedBox(height: screenHeight * 0.015),
+
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 "Agenda Terdekat",
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: screenWidth * 0.04,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -116,12 +116,13 @@ class AdminDashboard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          SizedBox(
-            height: 75,  // <-- tinggi dikurangi dari 90 jadi 75
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('agenda')
                   .orderBy('tanggal', descending: false)
+                  .limit(1)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -129,82 +130,64 @@ class AdminDashboard extends StatelessWidget {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("Tidak ada agenda."));
+                  return const Text("Tidak ada agenda.");
                 }
 
-                final agendaDocs = snapshot.data!.docs;
+                final data =
+                    snapshot.data!.docs.first.data() as Map<String, dynamic>;
+                final DateTime tanggal =
+                    (data['tanggal'] as Timestamp).toDate();
+                final String tanggalStr =
+                    "${tanggal.day.toString().padLeft(2, '0')}-${tanggal.month.toString().padLeft(2, '0')}-${tanggal.year}";
+                final String judul = data['nama'] ?? "Tanpa Judul";
 
-                return ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  itemCount: agendaDocs.length,
-                  itemBuilder: (context, index) {
-                    final agenda = agendaDocs[index];
-                    final data = agenda.data() as Map<String, dynamic>;
-
-                    final Timestamp timestamp = data['tanggal'];
-                    final DateTime tanggal = timestamp.toDate();
-                    final String tanggalStr =
-                        "${tanggal.day.toString().padLeft(2, '0')}-${tanggal.month.toString().padLeft(2, '0')}-${tanggal.year}";
-
-                    final String judul =
-                        data['nama']?.toString() ?? "Judul kosong";
-
-                    return Container(
-                      width: 180,
-                      margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            blurRadius: 3,
-                            spreadRadius: 1,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
+                return Container(
+                  padding: EdgeInsets.all(screenWidth * 0.035),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        blurRadius: 4,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 2),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today,
+                          color: Colors.black54, size: screenWidth * 0.04),
+                      SizedBox(width: screenWidth * 0.025),
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.calendar_today,
-                                  size: 14, color: Colors.black54),
-                              const SizedBox(width: 6),
-                              Text(
-                                tanggalStr,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            tanggalStr,
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.03,
+                              color: Colors.black54,
+                            ),
                           ),
-                          const SizedBox(height: 4),
                           Text(
                             judul,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.035,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                    );
-                  },
+                    ],
+                  ),
                 );
               },
             ),
           ),
-          const SizedBox(height: 20),
 
-          // Menu
+          SizedBox(height: screenHeight * 0.02),
+
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
@@ -218,8 +201,7 @@ class AdminDashboard extends StatelessWidget {
                     children: [
                       SizedBox(
                         width: (screenWidth -
-                                (screenWidth * 0.05 * 2 +
-                                    screenWidth * 0.04)) /
+                                (screenWidth * 0.05 * 2 + screenWidth * 0.04)) /
                             2,
                         height: screenHeight * 0.14,
                         child: GestureDetector(
@@ -238,8 +220,7 @@ class AdminDashboard extends StatelessWidget {
                       ),
                       SizedBox(
                         width: (screenWidth -
-                                (screenWidth * 0.05 * 2 +
-                                    screenWidth * 0.04)) /
+                                (screenWidth * 0.05 * 2 + screenWidth * 0.04)) /
                             2,
                         height: screenHeight * 0.14,
                         child: GestureDetector(
@@ -252,14 +233,13 @@ class AdminDashboard extends StatelessWidget {
                               ),
                             );
                           },
-                          child: _menuItem("Edit Agenda",
-                              Icons.edit_calendar, screenWidth),
+                          child: _menuItem(
+                              "Edit Agenda", Icons.edit_calendar, screenWidth),
                         ),
                       ),
                       SizedBox(
                         width: (screenWidth -
-                                (screenWidth * 0.05 * 2 +
-                                    screenWidth * 0.04)) /
+                                (screenWidth * 0.05 * 2 + screenWidth * 0.04)) /
                             2,
                         height: screenHeight * 0.14,
                         child: GestureDetector(
@@ -272,8 +252,8 @@ class AdminDashboard extends StatelessWidget {
                               ),
                             );
                           },
-                          child: _menuItem("Data Siswa dan Guru",
-                              Icons.group, screenWidth),
+                          child: _menuItem(
+                              "Data Siswa dan Guru", Icons.group, screenWidth),
                         ),
                       ),
                     ],
