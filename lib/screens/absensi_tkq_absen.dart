@@ -33,7 +33,7 @@ class _AbsensiTKQAbsenState extends State<AbsensiTKQAbsen> {
   Future<void> fetchSiswa() async {
     try {
       final snapshot = await FirebaseFirestore.instance
-          .collection('anak_sdit')
+          .collection('anak_tkq')
           .where('kelas', isEqualTo: widget.kelas)
           .get();
 
@@ -58,7 +58,7 @@ class _AbsensiTKQAbsenState extends State<AbsensiTKQAbsen> {
 
       for (int i = 0; i < siswa.length; i++) {
         if (pilihanAbsensi.containsKey(i)) {
-          await FirebaseFirestore.instance.collection('sdit_absen').add({
+          await FirebaseFirestore.instance.collection('tkq_absen').add({
             'nama': siswa[i],
             'absen': pilihanAbsensi[i],
             'tanggal': tanggalSekarang,
