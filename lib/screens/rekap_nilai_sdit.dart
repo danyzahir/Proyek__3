@@ -96,7 +96,7 @@ class RekapNilaiSdit extends StatelessWidget {
                     ),
                     SizedBox(height: screenHeight * 0.015),
                     Text(
-                      "Rekap Nilai - SDIT",
+                      "REKAP NILAI - SDIT",
                       style: TextStyle(
                         fontSize: screenWidth * 0.06,
                         fontWeight: FontWeight.bold,
