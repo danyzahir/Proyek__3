@@ -11,10 +11,16 @@ import 'login.dart';
 class RekapAbsenGuruSDIT extends StatelessWidget {
   final String username;
 
+
   const RekapAbsenGuruSDIT({super.key, required this.username});
 
   Future<Map<String, Map<String, int>>> fetchRekapAbsen() async {
-    final snapshot = await FirebaseFirestore.instance.collection('absensi_guru').get();
+    final snapshot = await FirebaseFirestore.instance
+        .collection('absensi_guru')
+        .where('unit', isEqualTo: 'SDIT')
+        .where('tanggal')
+        .get();
+
     Map<String, Map<String, int>> rekap = {};
 
     for (var doc in snapshot.docs) {
