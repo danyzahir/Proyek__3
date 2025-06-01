@@ -51,22 +51,23 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: FutureBuilder<QuerySnapshot>(
+                  // Query data anak SDIT berdasarkan kelas yang dipilih
                   future: FirebaseFirestore.instance
                       .collection('anak_sdit')
-                      .where('kelas', isEqualTo: '1')
+                      .where('kelas', isEqualTo: widget.namaKelas)
                       .get(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(
-                          child: Text('Tidak ada data siswa kelas 1.'));
+                      return Center(
+                          child: Text('Tidak ada data siswa kelas ${widget.namaKelas}'));
                     }
 
                     final dataList = snapshot.data!.docs;
 
-                    // Init controllers jika belum ada
+                    // Inisialisasi controller untuk tiap siswa jika belum ada
                     for (var doc in dataList) {
                       final nama = doc['nama'] ?? '';
                       if (!utsControllers.containsKey(nama)) {
@@ -108,8 +109,7 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                           child: ListView.builder(
                             itemCount: dataList.length,
                             itemBuilder: (context, index) {
-                              final data =
-                                  dataList[index].data() as Map<String, dynamic>;
+                              final data = dataList[index].data() as Map<String, dynamic>;
                               final nama = data['nama'] ?? '-';
 
                               return Container(
@@ -132,8 +132,8 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                                       child: Center(
                                         child: Text(
                                           '${index + 1}',
-                                          style:
-                                              TextStyle(fontSize: screenWidth * 0.035),
+                                          style: TextStyle(
+                                              fontSize: screenWidth * 0.035),
                                         ),
                                       ),
                                     ),
@@ -142,8 +142,8 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                                       child: Center(
                                         child: Text(
                                           nama,
-                                          style:
-                                              TextStyle(fontSize: screenWidth * 0.035),
+                                          style: TextStyle(
+                                              fontSize: screenWidth * 0.035),
                                         ),
                                       ),
                                     ),
@@ -416,7 +416,7 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
             'uts': utsVal,
             'uas': uasVal,
             'rata2': rata2,
-            'kelas': '1',
+
           });
 
           rataRataMap[nama] = rata2.toStringAsFixed(2);
@@ -427,7 +427,7 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
     await batch.commit();
 
     setState(() {
-      // update tampilan rata-rata
+      // Update tampilan rata-rata setelah simpan
     });
 
     ScaffoldMessenger.of(context).showSnackBar(

@@ -224,7 +224,7 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakSDITAdminKelas> {
                     ),
                     SizedBox(height: screenHeight * 0.015),
                     Text(
-                      "Data Anak - TKQ ${widget.kelas}",
+                      "Data Anak - SDIT ${widget.kelas}",
                       style: TextStyle(
                         fontSize: screenWidth * 0.06,
                         fontWeight: FontWeight.bold,
