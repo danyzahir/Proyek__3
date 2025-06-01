@@ -96,7 +96,7 @@ class DataAnakSDIT extends StatelessWidget {
                     ),
                     SizedBox(height: screenHeight * 0.015),
                     Text(
-                      "Data Anak - SDIT",
+                      "Data Murid - SDIT",
                       style: TextStyle(
                         fontSize: screenWidth * 0.06,
                         fontWeight: FontWeight.bold,
