@@ -52,16 +52,16 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: FutureBuilder<QuerySnapshot>(
                   future: FirebaseFirestore.instance
-                      .collection('anak_sdit')
-                      .where('kelas', isEqualTo: '1')
+                      .collection('anak_tkq')
+                      .where('kelas', isEqualTo: widget.namaKelas) // Dinamis berdasarkan kelas
                       .get(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(
-                          child: Text('Tidak ada data siswa kelas 1.'));
+                      return Center(
+                          child: Text('Tidak ada data siswa kelas ${widget.namaKelas}.'));
                     }
 
                     final dataList = snapshot.data!.docs;
@@ -416,7 +416,7 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
             'uts': utsVal,
             'uas': uasVal,
             'rata2': rata2,
-            'kelas': '1',
+            'kelas': widget.namaKelas, // simpan kelas juga supaya tahu kelasnya
           });
 
           rataRataMap[nama] = rata2.toStringAsFixed(2);
