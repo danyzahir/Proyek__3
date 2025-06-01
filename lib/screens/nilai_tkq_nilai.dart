@@ -409,7 +409,7 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
           double rata2 = (utsVal + uasVal) / 2;
 
           final docRef =
-              FirebaseFirestore.instance.collection('nilai_sdit').doc(nama);
+              FirebaseFirestore.instance.collection('nilai_tkq').doc(nama);
 
           batch.set(docRef, {
             'nama': nama,
