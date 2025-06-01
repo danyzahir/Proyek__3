@@ -19,24 +19,27 @@ class DataAnakTKQAdminKelas extends StatefulWidget {
 
 class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
   final TextEditingController namaController = TextEditingController();
-  final TextEditingController jabatanController = TextEditingController();
 
   void _tambahAtauEditAnak({String? docId}) {
     final isEdit = docId != null;
 
     if (isEdit) {
       FirebaseFirestore.instance
-          .collection('anak_sdit')
+          .collection('anak_tkq')
           .doc(docId)
           .get()
           .then((doc) {
-        namaController.text = doc['nama'];
-        jabatanController.text = doc['kelas'];
-        _showForm(docId: docId);
+        if (doc.exists) {
+          namaController.text = doc['nama'] ?? '';
+          _showForm(docId: docId);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data tidak ditemukan')),
+          );
+        }
       });
     } else {
       namaController.clear();
-      jabatanController.clear();
       _showForm();
     }
   }
@@ -64,10 +67,6 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                   controller: namaController,
                   decoration: const InputDecoration(labelText: 'Nama'),
                 ),
-                TextField(
-                  controller: jabatanController,
-                  decoration: const InputDecoration(labelText: 'kelas'),
-                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -85,27 +84,39 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                         ),
                       ),
                       onPressed: () async {
+                        final namaText = namaController.text.trim();
+                        if (namaText.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Nama tidak boleh kosong')),
+                          );
+                          return;
+                        }
+
                         final data = {
-                          'nama': namaController.text.trim(),
-                          'kelas': jabatanController.text.trim(),
+                          'nama': namaText,
+                          'kelas': widget.kelas.trim(),
                           'oleh': widget.username,
                           'timestamp': FieldValue.serverTimestamp(),
                         };
 
-                        if (docId == null) {
-                          await FirebaseFirestore.instance
-                              .collection('anak_sdit')
-                              .add(data);
-                        } else {
-                          await FirebaseFirestore.instance
-                              .collection('anak_sdit')
-                              .doc(docId)
-                              .update(data);
+                        try {
+                          if (docId == null) {
+                            await FirebaseFirestore.instance
+                                .collection('anak_tkq')
+                                .add(data);
+                          } else {
+                            await FirebaseFirestore.instance
+                                .collection('anak_tkq')
+                                .doc(docId)
+                                .update(data);
+                          }
+                          namaController.clear();
+                          Navigator.pop(context);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $e')),
+                          );
                         }
-
-                        namaController.clear();
-                        jabatanController.clear();
-                        Navigator.pop(context);
                       },
                       child: const Text("Simpan"),
                     ),
@@ -119,14 +130,26 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
     );
   }
 
-  void _hapusAnak(String docId) {
-    FirebaseFirestore.instance.collection('anak_sdit').doc(docId).delete();
+  void _hapusAnak(String docId) async {
+    try {
+      await FirebaseFirestore.instance.collection('anak_tkq').doc(docId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Data berhasil dihapus')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error menghapus data: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
+    // Debug print untuk kelas yang dicari
+    print('Mencari data kelas: ${widget.kelas}');
 
     return Scaffold(
       backgroundColor: Colors.blueGrey[100],
@@ -227,7 +250,7 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Row(
                         children: [
-                          _buildHeaderCell('Nama ', screenWidth, flex: 4),
+                          _buildHeaderCell('Nama', screenWidth, flex: 4),
                           _buildHeaderCell('Kelas', screenWidth, flex: 4),
                           IconButton(
                             icon: const Icon(Icons.add, color: Colors.white),
@@ -238,12 +261,18 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                     ),
                     StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
-                          .collection('anak_sdit')
-                          .orderBy('timestamp', descending: true)
+                          .collection('anak_tkq')
+                          .where('kelas', isEqualTo: widget.kelas)
+                          // .orderBy('timestamp', descending: true) // Coba di-uncomment kalau sudah yakin timestamp ada di semua dokumen
                           .snapshots(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
+                        if (snapshot.hasError) {
+                          return Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        }
+                        if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Padding(
                             padding: EdgeInsets.all(20),
                             child: CircularProgressIndicator(),
@@ -255,6 +284,8 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                             child: Text("Belum ada data."),
                           );
                         }
+
+                        print("Jumlah data anak: ${snapshot.data!.docs.length}");
 
                         return Column(
                           children: snapshot.data!.docs.map((doc) {
