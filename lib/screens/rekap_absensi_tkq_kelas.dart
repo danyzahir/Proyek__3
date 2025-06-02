@@ -20,6 +20,8 @@ class RekapAbsenTKQKelas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final upperKelas = namaKelas.toUpperCase(); // ubah jadi kapital semua
+
     return Scaffold(
       backgroundColor: Colors.blueGrey[100],
       body: SingleChildScrollView(
@@ -92,7 +94,7 @@ class RekapAbsenTKQKelas extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   Text(
-                    "REKAP ABSEN $namaKelas",
+                    "REKAP ABSEN $upperKelas",
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -115,7 +117,6 @@ class RekapAbsenTKQKelas extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Firebase Data
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -169,8 +170,8 @@ class RekapAbsenTKQKelas extends StatelessWidget {
                   // List dari Firestore
                   FutureBuilder<QuerySnapshot>(
                     future: FirebaseFirestore.instance
-                        .collection('sdit_absen')
-                        .where('kelas', isEqualTo: '1')
+                        .collection('tkq_absen')
+                        .where('kelas', isEqualTo: upperKelas)
                         .get(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -183,7 +184,6 @@ class RekapAbsenTKQKelas extends StatelessWidget {
 
                       final docs = snapshot.data!.docs;
 
-                      // Hitung rekap absensi berdasarkan nama
                       Map<String, Map<String, int>> rekap = {};
 
                       for (var doc in docs) {
