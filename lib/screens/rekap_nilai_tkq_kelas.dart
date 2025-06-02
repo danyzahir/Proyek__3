@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:proyek3/screens/rekap_absensi.dart';
 import 'absensi.dart';
 import 'home_screen.dart';
@@ -21,7 +22,6 @@ class Rekapnilaitkqkelas extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header Hijau
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 45),
               decoration: const BoxDecoration(
@@ -62,8 +62,7 @@ class Rekapnilaitkqkelas extends StatelessWidget {
                               }
                             },
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                                borderRadius: BorderRadius.circular(10)),
                             itemBuilder: (context) => [
                               const PopupMenuItem(
                                 value: 'logout',
@@ -88,7 +87,7 @@ class Rekapnilaitkqkelas extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   Text(
-                    "$kelas",
+                    "REKAP NILAI KELAS $kelas",
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -98,26 +97,16 @@ class Rekapnilaitkqkelas extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 20),
-
-            // Bulan
             const Text(
               "SEMESTER",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 20),
-
-            // Tabel Rekap
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  // Header Tabel
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.green,
@@ -165,27 +154,88 @@ class Rekapnilaitkqkelas extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
+                  FutureBuilder<QuerySnapshot>(
+                    future: FirebaseFirestore.instance
+                        .collection('nilai_tkq')
+                        .where('kelas', isEqualTo: kelas)
+                        .get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return const Text('Tidak ada data nilai tersedia.');
+                      }
 
-                  // Data Rows
-                  ..._buildTableRows([
-                    ["1", "Abdul", "8", "8", "8"],
-                    ["2", "Adnan", "", "", ""],
-                    ["3", "Bule", "", "", ""],
-                    ["4", "Candi", "", "", ""],
-                    ["5", "Dafa", "", "", ""],
-                    ["6", "Farah", "", "", ""],
-                    ["7", "Gion", "", "", ""],
-                  ]),
+                      final docs = snapshot.data!.docs;
+
+                      final dataList = docs.map((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        final nama = data['nama'] ?? '-';
+                        final uts =
+                            double.tryParse(data['uts']?.toString() ?? '0') ??
+                                0;
+                        final uas =
+                            double.tryParse(data['uas']?.toString() ?? '0') ??
+                                0;
+                        final rata2 = (uts * 0.4) + (uas * 0.6);
+                        return {
+                          'nama': nama,
+                          'uts': uts,
+                          'uas': uas,
+                          'rata2': rata2
+                        };
+                      }).toList();
+
+                      dataList.sort((a, b) => b['rata2'].compareTo(a['rata2']));
+
+                      return Column(
+                        children: List.generate(dataList.length, (index) {
+                          final item = dataList[index];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                    flex: 1,
+                                    child: Center(child: Text('${index + 1}'))),
+                                Expanded(
+                                    flex: 3,
+                                    child: Center(child: Text(item['nama']))),
+                                Expanded(
+                                    flex: 2,
+                                    child: Center(
+                                        child: Text(
+                                            item['uts'].toStringAsFixed(1)))),
+                                Expanded(
+                                    flex: 2,
+                                    child: Center(
+                                        child: Text(
+                                            item['uas'].toStringAsFixed(1)))),
+                                Expanded(
+                                    flex: 2,
+                                    child: Center(
+                                        child: Text(
+                                            item['rata2'].toStringAsFixed(1)))),
+                              ],
+                            ),
+                          );
+                        }),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
-
             const SizedBox(height: 30),
           ],
         ),
       ),
-
-      // Bottom Navigation Bar
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: const BoxDecoration(
@@ -222,37 +272,13 @@ class Rekapnilaitkqkelas extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildTableRows(List<List<String>> data) {
-    return data.map((row) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Expanded(flex: 1, child: Center(child: Text(row[0]))),
-            Expanded(flex: 3, child: Center(child: Text(row[1]))),
-            Expanded(flex: 2, child: Center(child: Text(row[2]))),
-            Expanded(flex: 2, child: Center(child: Text(row[3]))),
-            Expanded(flex: 2, child: Center(child: Text(row[4]))),
-          ],
-        ),
-      );
-    }).toList();
-  }
-
   Widget _navItem(BuildContext context, String title, IconData icon,
       Widget page, bool isActive) {
     return GestureDetector(
       onTap: () {
         if (!isActive) {
           Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => page),
-          );
+              context, MaterialPageRoute(builder: (context) => page));
         }
       },
       child: Column(
