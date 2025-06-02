@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login.dart';
 
-class DataAnakSDITKelas extends StatefulWidget {
+class  DataAnakSDITKelas extends StatefulWidget {
   final String username;
   final String kelas;
 
@@ -14,19 +14,29 @@ class DataAnakSDITKelas extends StatefulWidget {
   });
 
   @override
-  State<DataAnakSDITKelas> createState() => _DataAnakSDITAdminKelasState();
+  State<DataAnakSDITKelas> createState() => _DataAnakSDITKelasState();
 }
 
-class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
+class _DataAnakSDITKelasState extends State<DataAnakSDITKelas> {
   final TextEditingController namaController = TextEditingController();
 
   void _tambahAtauEditAnak({String? docId}) {
     final isEdit = docId != null;
 
     if (isEdit) {
-      FirebaseFirestore.instance.collection('anak_sdit').doc(docId).get().then((doc) {
-        namaController.text = doc['nama'];
-        _showForm(docId: docId);
+      FirebaseFirestore.instance
+          .collection('anak_sdit')
+          .doc(docId)
+          .get()
+          .then((doc) {
+        if (doc.exists) {
+          namaController.text = doc['nama'] ?? '';
+          _showForm(docId: docId);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data tidak ditemukan')),
+          );
+        }
       });
     } else {
       namaController.clear();
@@ -39,8 +49,9 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
       context: context,
       builder: (context) {
         return Dialog(
-          backgroundColor: Colors.green[50],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: Colors.purple[50],
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -48,7 +59,8 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
               children: [
                 Text(
                   docId == null ? "Tambah Data Anak" : "Edit Data Anak",
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 20),
                 TextField(
@@ -61,31 +73,50 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Text("Batal", style: TextStyle(color: Colors.green)),
+                      child: const Text("Batal",
+                          style: TextStyle(color: Colors.purple)),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[200],
+                        backgroundColor: Colors.purple[100],
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                       onPressed: () async {
+                        final namaText = namaController.text.trim();
+                        if (namaText.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Nama tidak boleh kosong')),
+                          );
+                          return;
+                        }
+
                         final data = {
-                          'nama': namaController.text.trim(),
+                          'nama': namaText,
                           'kelas': widget.kelas.trim(),
                           'oleh': widget.username,
                           'timestamp': FieldValue.serverTimestamp(),
                         };
 
-                        if (docId == null) {
-                          await FirebaseFirestore.instance.collection('anak_sdit').add(data);
-                        } else {
-                          await FirebaseFirestore.instance.collection('anak_sdit').doc(docId).update(data);
+                        try {
+                          if (docId == null) {
+                            await FirebaseFirestore.instance
+                                .collection('anak_sdit')
+                                .add(data);
+                          } else {
+                            await FirebaseFirestore.instance
+                                .collection('anak_sdit')
+                                .doc(docId)
+                                .update(data);
+                          }
+                          namaController.clear();
+                          Navigator.pop(context);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $e')),
+                          );
                         }
-
-                        namaController.clear();
-                        Navigator.pop(context);
                       },
                       child: const Text("Simpan"),
                     ),
@@ -99,8 +130,17 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
     );
   }
 
-  void _hapusAnak(String docId) {
-    FirebaseFirestore.instance.collection('anak_sdit').doc(docId).delete();
+  void _hapusAnak(String docId) async {
+    try {
+      await FirebaseFirestore.instance.collection('anak_sdit').doc(docId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Data berhasil dihapus')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error menghapus data: $e')),
+      );
+    }
   }
 
   @override
@@ -108,20 +148,25 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
+    // Debug print untuk kelas yang dicari
+    print('Mencari data kelas: ${widget.kelas}');
+
     return Scaffold(
-      backgroundColor: Colors.blueGrey[50],
+      backgroundColor: Colors.blueGrey[100],
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // Header
               Container(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.05),
+                padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.05,
+                    vertical: screenHeight * 0.05),
                 decoration: const BoxDecoration(
                   color: Colors.green,
                   borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30)),
                 ),
                 child: Column(
                   children: [
@@ -129,15 +174,16 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          icon:
+                              const Icon(Icons.arrow_back, color: Colors.white),
                           onPressed: () => Navigator.pop(context),
                         ),
                         Row(
                           children: [
-                            Text(
-                              widget.username,
-                              style: TextStyle(fontSize: screenWidth * 0.04, color: Colors.white),
-                            ),
+                            Text(widget.username,
+                                style: TextStyle(
+                                    fontSize: screenWidth * 0.04,
+                                    color: Colors.white)),
                             SizedBox(width: screenWidth * 0.02),
                             PopupMenuButton<String>(
                               onSelected: (value) async {
@@ -145,12 +191,15 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
                                   await FirebaseAuth.instance.signOut();
                                   Navigator.pushAndRemoveUntil(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LoginScreen()),
                                     (route) => false,
                                   );
                                 }
                               },
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
                               itemBuilder: (context) => [
                                 const PopupMenuItem(
                                   value: 'logout',
@@ -185,7 +234,10 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
                   ],
                 ),
               ),
+
               SizedBox(height: screenHeight * 0.02),
+
+              // Data List
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: Column(
@@ -198,7 +250,7 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Row(
                         children: [
-                          _buildHeaderCell('Nama ', screenWidth, flex: 4),
+                          _buildHeaderCell('Nama', screenWidth, flex: 4),
                           _buildHeaderCell('Kelas', screenWidth, flex: 4),
                           IconButton(
                             icon: const Icon(Icons.add, color: Colors.white),
@@ -211,9 +263,15 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
                       stream: FirebaseFirestore.instance
                           .collection('anak_sdit')
                           .where('kelas', isEqualTo: widget.kelas)
-                          .orderBy('timestamp', descending: true)
+                          // .orderBy('timestamp', descending: true) // Coba di-uncomment kalau sudah yakin timestamp ada di semua dokumen
                           .snapshots(),
                       builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        }
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Padding(
                             padding: EdgeInsets.all(20),
@@ -227,6 +285,8 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
                           );
                         }
 
+                        print("Jumlah data anak: ${snapshot.data!.docs.length}");
+
                         return Column(
                           children: snapshot.data!.docs.map((doc) {
                             final data = doc.data() as Map<String, dynamic>;
@@ -236,7 +296,8 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
                               child: Row(
                                 children: [
                                   Expanded(
@@ -255,10 +316,11 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.edit, size: 18),
-                                    onPressed: () => _tambahAtauEditAnak(docId: doc.id),
+                                    onPressed: () =>
+                                        _tambahAtauEditAnak(docId: doc.id),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete_forever, size: 18),
+                                    icon: const Icon(Icons.remove, size: 18),
                                     onPressed: () => _hapusAnak(doc.id),
                                   ),
                                 ],
@@ -271,6 +333,7 @@ class _DataAnakSDITAdminKelasState extends State<DataAnakSDITKelas> {
                   ],
                 ),
               ),
+
               SizedBox(height: screenHeight * 0.03),
             ],
           ),
