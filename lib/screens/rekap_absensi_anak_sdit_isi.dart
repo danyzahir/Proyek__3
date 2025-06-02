@@ -18,6 +18,17 @@ class RekapAbsenAnakSDIT extends StatelessWidget {
     required this.namaKelas,
   });
 
+  // Fungsi bantu untuk ekstrak kode kelas dari nama kelas
+  // Misal "KELAS A" jadi "A"
+  String _extractKelas(String kelasLengkap) {
+    // Asumsi nama kelas seperti "KELAS A"
+    final parts = kelasLengkap.split(' ');
+    if (parts.length >= 2) {
+      return parts[1]; // "A"
+    }
+    return kelasLengkap; // fallback
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,7 +181,7 @@ class RekapAbsenAnakSDIT extends StatelessWidget {
                   FutureBuilder<QuerySnapshot>(
                     future: FirebaseFirestore.instance
                         .collection('sdit_absen')
-                        .where('kelas', isEqualTo: '1')
+                        .where('kelas', isEqualTo: _extractKelas(namaKelas))
                         .get(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
