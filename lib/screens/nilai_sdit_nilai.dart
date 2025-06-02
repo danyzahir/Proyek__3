@@ -35,6 +35,11 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
     super.dispose();
   }
 
+  String _extractKelas(String input) {
+    final match = RegExp(r'\d+').firstMatch(input);
+    return match?.group(0) ?? '';
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -51,10 +56,9 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: FutureBuilder<QuerySnapshot>(
-                  // Query data anak SDIT berdasarkan kelas yang dipilih
                   future: FirebaseFirestore.instance
                       .collection('anak_sdit')
-                      .where('kelas', isEqualTo: widget.namaKelas)
+                      .where('kelas', isEqualTo: _extractKelas(widget.namaKelas)) // ← fix here
                       .get(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -62,12 +66,11 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                       return Center(
-                          child: Text('Tidak ada data siswa kelas ${widget.namaKelas}'));
+                          child: Text('Tidak ada data siswa kelas ${widget.namaKelas}.'));
                     }
 
                     final dataList = snapshot.data!.docs;
 
-                    // Inisialisasi controller untuk tiap siswa jika belum ada
                     for (var doc in dataList) {
                       final nama = doc['nama'] ?? '';
                       if (!utsControllers.containsKey(nama)) {
@@ -90,8 +93,7 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                               ),
                               elevation: 5,
                               shadowColor: Colors.black54,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 25, vertical: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
                             ),
                             onPressed: _simpanNilaiKeFirebase,
                             child: const Text(
@@ -114,17 +116,14 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
 
                               return Container(
                                 decoration: BoxDecoration(
-                                  color: index % 2 == 0
-                                      ? Colors.white
-                                      : Colors.grey[100],
+                                  color: index % 2 == 0 ? Colors.white : Colors.grey[100],
                                   borderRadius: BorderRadius.vertical(
                                     bottom: index == dataList.length - 1
                                         ? const Radius.circular(10)
                                         : Radius.zero,
                                   ),
                                 ),
-                                padding: EdgeInsets.symmetric(
-                                    vertical: screenWidth * 0.025),
+                                padding: EdgeInsets.symmetric(vertical: screenWidth * 0.025),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -132,8 +131,7 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                                       child: Center(
                                         child: Text(
                                           '${index + 1}',
-                                          style: TextStyle(
-                                              fontSize: screenWidth * 0.035),
+                                          style: TextStyle(fontSize: screenWidth * 0.035),
                                         ),
                                       ),
                                     ),
@@ -142,8 +140,7 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                                       child: Center(
                                         child: Text(
                                           nama,
-                                          style: TextStyle(
-                                              fontSize: screenWidth * 0.035),
+                                          style: TextStyle(fontSize: screenWidth * 0.035),
                                         ),
                                       ),
                                     ),
@@ -242,8 +239,7 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                         await FirebaseAuth.instance.signOut();
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => const LoginScreen()),
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
                           (route) => false,
                         );
                       }
@@ -397,7 +393,6 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
 
   Future<void> _simpanNilaiKeFirebase() async {
     final batch = FirebaseFirestore.instance.batch();
-
     rataRataMap.clear();
 
     utsControllers.forEach((nama, utsC) {
@@ -408,15 +403,14 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
         if (utsVal != null && uasVal != null) {
           double rata2 = (utsVal + uasVal) / 2;
 
-          final docRef =
-              FirebaseFirestore.instance.collection('nilai_sdit').doc(nama);
+          final docRef = FirebaseFirestore.instance.collection('nilai_sdit').doc(nama);
 
           batch.set(docRef, {
             'nama': nama,
             'uts': utsVal,
             'uas': uasVal,
             'rata2': rata2,
-
+            'kelas': _extractKelas(widget.namaKelas),
           });
 
           rataRataMap[nama] = rata2.toStringAsFixed(2);
@@ -426,9 +420,7 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
 
     await batch.commit();
 
-    setState(() {
-      // Update tampilan rata-rata setelah simpan
-    });
+    setState(() {});
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Data nilai berhasil disimpan')),
