@@ -43,8 +43,7 @@ class DataAnakTKQ extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon:
-                              const Icon(Icons.arrow_back, color: Colors.white),
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
                           onPressed: () => Navigator.pop(context),
                         ),
                         Row(
@@ -140,7 +139,7 @@ class DataAnakTKQ extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (context) => DataAnakTKQKelas(
                               username: username,
-                              namaKelas: "KELAS A",
+                              kelas: "KELAS A",  // <-- perbaikan di sini
                             ),
                           ),
                         );
@@ -168,7 +167,7 @@ class DataAnakTKQ extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (context) => DataAnakTKQKelas(
                               username: username,
-                              namaKelas: "KELAS B",
+                              kelas: "KELAS B",  // <-- perbaikan di sini
                             ),
                           ),
                         );
@@ -196,7 +195,7 @@ class DataAnakTKQ extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (context) => DataAnakTKQKelas(
                               username: username,
-                              namaKelas: "KELAS C",
+                              kelas: "KELAS C",  // <-- perbaikan di sini
                             ),
                           ),
                         );

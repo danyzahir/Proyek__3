@@ -1,59 +1,145 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'home_screen.dart';
-import 'absensi.dart';
-import 'nilai.dart';
-import 'data_guru_anak.dart';
 import 'login.dart';
-import 'rekap_absensi.dart';
 
 class DataAnakTKQKelas extends StatefulWidget {
   final String username;
-  final String namaKelas;
+  final String kelas;
 
-  const DataAnakTKQKelas(
-      {super.key, required this.username, required this.namaKelas});
+  const DataAnakTKQKelas({
+    super.key,
+    required this.username,
+    required this.kelas,
+  });
 
   @override
   State<DataAnakTKQKelas> createState() => _DataAnakTKQKelasState();
 }
 
 class _DataAnakTKQKelasState extends State<DataAnakTKQKelas> {
-  List<Map<String, String>> siswa = [];
-  bool isLoading = true;
+  final TextEditingController namaController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    fetchSiswaByKelas();
+  void _tambahAtauEditAnak({String? docId}) {
+    final isEdit = docId != null;
+
+    if (isEdit) {
+      FirebaseFirestore.instance
+          .collection('anak_tkq')
+          .doc(docId)
+          .get()
+          .then((doc) {
+        if (doc.exists) {
+          namaController.text = doc['nama'] ?? '';
+          _showForm(docId: docId);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data tidak ditemukan')),
+          );
+        }
+      });
+    } else {
+      namaController.clear();
+      _showForm();
+    }
   }
 
-  Future<void> fetchSiswaByKelas() async {
+  void _showForm({String? docId}) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.purple[50],
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  docId == null ? "Tambah Data Anak" : "Edit Data Anak",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: namaController,
+                  decoration: const InputDecoration(labelText: 'Nama'),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Text("Batal",
+                          style: TextStyle(color: Colors.purple)),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple[100],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      onPressed: () async {
+                        final namaText = namaController.text.trim();
+                        if (namaText.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Nama tidak boleh kosong')),
+                          );
+                          return;
+                        }
+
+                        final data = {
+                          'nama': namaText,
+                          'kelas': widget.kelas.trim(),
+                          'oleh': widget.username,
+                          'timestamp': FieldValue.serverTimestamp(),
+                        };
+
+                        try {
+                          if (docId == null) {
+                            await FirebaseFirestore.instance
+                                .collection('anak_tkq')
+                                .add(data);
+                          } else {
+                            await FirebaseFirestore.instance
+                                .collection('anak_tkq')
+                                .doc(docId)
+                                .update(data);
+                          }
+                          namaController.clear();
+                          Navigator.pop(context);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $e')),
+                          );
+                        }
+                      },
+                      child: const Text("Simpan"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _hapusAnak(String docId) async {
     try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('anak_sdit')
-          .where('kelas', isEqualTo: widget.namaKelas)
-          .get();
-
-      final List<Map<String, String>> dataAnak = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return {
-          'nama': data['nama']?.toString() ?? '',
-          'kelas': data['kelas']?.toString() ?? '',
-        };
-      }).toList();
-
-      setState(() {
-        siswa = dataAnak;
-        isLoading = false;
-      });
+      await FirebaseFirestore.instance.collection('anak_tkq').doc(docId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Data berhasil dihapus')),
+      );
     } catch (e) {
-      print("Error fetching siswa: $e");
-      setState(() {
-        isLoading = false;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error menghapus data: $e')),
+      );
     }
   }
 
@@ -62,138 +148,195 @@ class _DataAnakTKQKelasState extends State<DataAnakTKQKelas> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
+    // Debug print untuk kelas yang dicari
+    print('Mencari data kelas: ${widget.kelas}');
+
     return Scaffold(
       backgroundColor: Colors.blueGrey[100],
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildHeader(screenWidth, screenHeight),
+              // Header
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.05,
+                    vertical: screenHeight * 0.05),
+                decoration: const BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon:
+                              const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        Row(
+                          children: [
+                            Text(widget.username,
+                                style: TextStyle(
+                                    fontSize: screenWidth * 0.04,
+                                    color: Colors.white)),
+                            SizedBox(width: screenWidth * 0.02),
+                            PopupMenuButton<String>(
+                              onSelected: (value) async {
+                                if (value == 'logout') {
+                                  await FirebaseAuth.instance.signOut();
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LoginScreen()),
+                                    (route) => false,
+                                  );
+                                }
+                              },
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'logout',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.logout, color: Colors.red),
+                                      SizedBox(width: 10),
+                                      Text('Logout'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              child: const CircleAvatar(
+                                backgroundColor: Colors.white,
+                                radius: 18,
+                                child: Icon(Icons.person, color: Colors.black),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: screenHeight * 0.015),
+                    Text(
+                      "Data Anak - TKQ ${widget.kelas}",
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.06,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               SizedBox(height: screenHeight * 0.02),
+
+              // Data List
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                child: isLoading
-                    ? const CircularProgressIndicator()
-                    : Column(
+                child: Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.green[700],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
                         children: [
-                          _buildTableHeader(screenWidth),
-                          for (int i = 0; i < siswa.length; i++)
-                            _buildRow(
-                              i,
-                              siswa[i]['nama']!,
-                              siswa[i]['kelas']!,
-                              screenWidth,
-                            ),
+                          _buildHeaderCell('Nama', screenWidth, flex: 4),
+                          _buildHeaderCell('Kelas', screenWidth, flex: 4),
+                          IconButton(
+                            icon: const Icon(Icons.add, color: Colors.white),
+                            onPressed: () => _tambahAtauEditAnak(),
+                          ),
                         ],
                       ),
+                    ),
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('anak_tkq')
+                          .where('kelas', isEqualTo: widget.kelas)
+                          // .orderBy('timestamp', descending: true) // Coba di-uncomment kalau sudah yakin timestamp ada di semua dokumen
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        }
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Padding(
+                            padding: EdgeInsets.all(20),
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Text("Belum ada data."),
+                          );
+                        }
+
+                        print("Jumlah data anak: ${snapshot.data!.docs.length}");
+
+                        return Column(
+                          children: snapshot.data!.docs.map((doc) {
+                            final data = doc.data() as Map<String, dynamic>;
+                            return Container(
+                              margin: const EdgeInsets.only(top: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 4,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Text(data['nama'] ?? '-'),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 4,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Text(data['kelas'] ?? '-'),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, size: 18),
+                                    onPressed: () =>
+                                        _tambahAtauEditAnak(docId: doc.id),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.remove, size: 18),
+                                    onPressed: () => _hapusAnak(doc.id),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
+
               SizedBox(height: screenHeight * 0.03),
             ],
           ),
-        ),
-      ),
-      bottomNavigationBar: _buildBottomNav(screenHeight, screenWidth),
-    );
-  }
-
-  Widget _buildHeader(double screenWidth, double screenHeight) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.05,
-        vertical: screenHeight * 0.05,
-      ),
-      decoration: const BoxDecoration(
-        color: Colors.green,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
-              Row(
-                children: [
-                  Text(
-                    widget.username,
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.04,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(width: screenWidth * 0.02),
-                  PopupMenuButton<String>(
-                    onSelected: (value) async {
-                      if (value == 'logout') {
-                        await FirebaseAuth.instance.signOut();
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                          (route) => false,
-                        );
-                      }
-                    },
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'logout',
-                        child: Row(
-                          children: [
-                            Icon(Icons.logout, color: Colors.red),
-                            SizedBox(width: 10),
-                            Text('Logout'),
-                          ],
-                        ),
-                      ),
-                    ],
-                    child: const CircleAvatar(
-                      backgroundColor: Colors.white,
-                      radius: 18,
-                      child: Icon(Icons.person, color: Colors.black),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: screenHeight * 0.015),
-          Text(
-            "DATA MURID - TKQ (${widget.namaKelas})",
-            style: TextStyle(
-              fontSize: screenWidth * 0.06,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTableHeader(double screenWidth) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(10),
-        topRight: Radius.circular(10),
-      ),
-      child: Container(
-        color: Colors.green[700],
-        child: Row(
-          children: [
-            _buildHeaderCell('No', screenWidth, flex: 1),
-            _buildHeaderCell('Nama', screenWidth, flex: 3),
-            _buildHeaderCell('Kelas', screenWidth, flex: 4),
-          ],
         ),
       ),
     );
@@ -214,117 +357,6 @@ class _DataAnakTKQKelasState extends State<DataAnakTKQKelas> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildRow(int index, String nama, String kelas, double screenWidth) {
-    return Container(
-      decoration: BoxDecoration(
-        color: index % 2 == 0 ? Colors.white : Colors.grey[100],
-        borderRadius: BorderRadius.vertical(
-          bottom: index == siswa.length - 1
-              ? const Radius.circular(10)
-              : Radius.zero,
-        ),
-      ),
-      padding: EdgeInsets.symmetric(vertical: screenWidth * 0.03),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 1,
-            child: Center(
-              child: Text(
-                "${index + 1}.",
-                style: TextStyle(fontSize: screenWidth * 0.035),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Center(
-              child: Text(
-                nama,
-                style: TextStyle(fontSize: screenWidth * 0.035),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 4,
-            child: Center(
-              child: Text(
-                kelas,
-                style: TextStyle(fontSize: screenWidth * 0.035),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNav(double screenHeight, double screenWidth) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey,
-            blurRadius: 5,
-            spreadRadius: 2,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navItem(context, "Dashboard", Icons.home,
-              HomeScreen(username: widget.username), false, screenWidth),
-          _navItem(context, "Absensi", Icons.assignment_ind_rounded,
-              AbsensiScreen(username: widget.username), false, screenWidth),
-          _navItem(context, "Nilai", Icons.my_library_books_rounded,
-              NilaiScreen(username: widget.username), false, screenWidth),
-          _navItem(context, "Data Guru & Anak", Icons.person,
-              DataScreen(username: widget.username), true, screenWidth),
-          _navItem(context, "Rekap Absensi", Icons.receipt_long,
-              RekapScreen(username: widget.username), false, screenWidth),
-        ],
-      ),
-    );
-  }
-
-  Widget _navItem(BuildContext context, String title, IconData icon,
-      Widget page, bool isActive, double screenWidth) {
-    return GestureDetector(
-      onTap: () {
-        if (!isActive) {
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => page));
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon,
-              size: screenWidth * 0.06,
-              color: isActive ? Colors.green : Colors.black54),
-          SizedBox(height: screenWidth * 0.01),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: screenWidth * 0.025,
-              fontWeight: FontWeight.w600,
-              color: isActive ? Colors.green : Colors.black54,
-            ),
-          ),
-        ],
       ),
     );
   }
