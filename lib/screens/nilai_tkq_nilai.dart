@@ -53,7 +53,7 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
                 child: FutureBuilder<QuerySnapshot>(
                   future: FirebaseFirestore.instance
                       .collection('anak_tkq')
-                      .where('kelas', isEqualTo: widget.namaKelas) // Dinamis berdasarkan kelas
+                      .where('kelas', isEqualTo: widget.namaKelas)
                       .get(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -61,12 +61,12 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                       return Center(
-                          child: Text('Tidak ada data siswa kelas ${widget.namaKelas}.'));
+                          child: Text(
+                              'Tidak ada data siswa kelas ${widget.namaKelas}.'));
                     }
 
                     final dataList = snapshot.data!.docs;
 
-                    // Init controllers jika belum ada
                     for (var doc in dataList) {
                       final nama = doc['nama'] ?? '';
                       if (!utsControllers.containsKey(nama)) {
@@ -149,11 +149,17 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: screenWidth * 0.01,
+                                            horizontal: screenWidth * 0.01),
                                         child: TextField(
                                           controller: utsControllers[nama],
                                           keyboardType: TextInputType.number,
+                                          textAlign: TextAlign.center,
                                           decoration: const InputDecoration(
+                                            isDense: true,
+                                            contentPadding: EdgeInsets.zero,
                                             border: InputBorder.none,
                                             hintText: 'UTS',
                                           ),
@@ -162,11 +168,17 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: screenWidth * 0.01,
+                                            horizontal: screenWidth * 0.01),
                                         child: TextField(
                                           controller: uasControllers[nama],
                                           keyboardType: TextInputType.number,
+                                          textAlign: TextAlign.center,
                                           decoration: const InputDecoration(
+                                            isDense: true,
+                                            contentPadding: EdgeInsets.zero,
                                             border: InputBorder.none,
                                             hintText: 'UAS',
                                           ),
@@ -416,7 +428,7 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
             'uts': utsVal,
             'uas': uasVal,
             'rata2': rata2,
-            'kelas': widget.namaKelas, // simpan kelas juga supaya tahu kelasnya
+            'kelas': widget.namaKelas,
           });
 
           rataRataMap[nama] = rata2.toStringAsFixed(2);
@@ -426,9 +438,7 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
 
     await batch.commit();
 
-    setState(() {
-      // update tampilan rata-rata
-    });
+    setState(() {});
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Data nilai berhasil disimpan')),

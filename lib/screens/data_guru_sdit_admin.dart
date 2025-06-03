@@ -25,13 +25,16 @@ class _DataGuruSDITAdminState extends State<DataGuruSDITAdmin> {
   }
 
   Future<void> _loadGuru() async {
-    final snapshot = await FirebaseFirestore.instance.collection('guru_sdit').get();
+    final snapshot =
+        await FirebaseFirestore.instance.collection('guru_sdit').get();
     setState(() {
-      guru = snapshot.docs.map((doc) => {
-        'id': doc.id,
-        'nama': doc['nama'],
-        'jabatan': doc['jabatan'],
-      }).toList();
+      guru = snapshot.docs
+          .map((doc) => {
+                'id': doc.id,
+                'nama': doc['nama'],
+                'jabatan': doc['jabatan'],
+              })
+          .toList();
     });
   }
 
@@ -48,7 +51,8 @@ class _DataGuruSDITAdminState extends State<DataGuruSDITAdmin> {
     _loadGuru();
   }
 
-  Future<void> _editGuruFirestore(String id, String nama, String jabatan) async {
+  Future<void> _editGuruFirestore(
+      String id, String nama, String jabatan) async {
     await FirebaseFirestore.instance.collection('guru_sdit').doc(id).update({
       'nama': nama,
       'jabatan': jabatan,
@@ -62,21 +66,26 @@ class _DataGuruSDITAdminState extends State<DataGuruSDITAdmin> {
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.purple[50],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text("Tambah Akun Guru", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                const Text("Tambah Akun Guru",
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                 const SizedBox(height: 20),
                 TextField(
                   controller: namaController,
-                  decoration: const InputDecoration(labelText: 'Nama', border: UnderlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Nama', border: UnderlineInputBorder()),
                 ),
                 TextField(
                   controller: jabatanController,
-                  decoration: const InputDecoration(labelText: 'Jabatan', border: UnderlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Jabatan', border: UnderlineInputBorder()),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -84,15 +93,18 @@ class _DataGuruSDITAdminState extends State<DataGuruSDITAdmin> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Text("Batal", style: TextStyle(color: Colors.purple)),
+                      child: const Text("Batal",
+                          style: TextStyle(color: Colors.purple)),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple[100],
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
                       ),
                       onPressed: () {
-                        _tambahGuruFirestore(namaController.text, jabatanController.text);
+                        _tambahGuruFirestore(
+                            namaController.text, jabatanController.text);
                         namaController.clear();
                         jabatanController.clear();
                         Navigator.pop(context);
@@ -121,21 +133,26 @@ class _DataGuruSDITAdminState extends State<DataGuruSDITAdmin> {
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.purple[50],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text("Edit Akun Guru", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                const Text("Edit Akun Guru",
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                 const SizedBox(height: 20),
                 TextField(
                   controller: namaController,
-                  decoration: const InputDecoration(labelText: 'Nama', border: UnderlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Nama', border: UnderlineInputBorder()),
                 ),
                 TextField(
                   controller: jabatanController,
-                  decoration: const InputDecoration(labelText: 'Jabatan', border: UnderlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'Jabatan', border: UnderlineInputBorder()),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -143,12 +160,14 @@ class _DataGuruSDITAdminState extends State<DataGuruSDITAdmin> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Text("Batal", style: TextStyle(color: Colors.purple)),
+                      child: const Text("Batal",
+                          style: TextStyle(color: Colors.purple)),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple[100],
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
                       ),
                       onPressed: () {
                         _editGuruFirestore(
@@ -201,7 +220,8 @@ class _DataGuruSDITAdminState extends State<DataGuruSDITAdmin> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          icon:
+                              const Icon(Icons.arrow_back, color: Colors.white),
                           onPressed: () => Navigator.pop(context),
                         ),
                         Row(
@@ -220,12 +240,15 @@ class _DataGuruSDITAdminState extends State<DataGuruSDITAdmin> {
                                   await FirebaseAuth.instance.signOut();
                                   Navigator.pushAndRemoveUntil(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LoginScreen()),
                                     (route) => false,
                                   );
                                 }
                               },
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
                               itemBuilder: (context) => [
                                 const PopupMenuItem(
                                   value: 'logout',
@@ -294,16 +317,26 @@ class _DataGuruSDITAdminState extends State<DataGuruSDITAdmin> {
                           children: [
                             Expanded(
                               flex: 4,
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Text(guru[i]['nama'] ?? ''),
+                              child: Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Text(
+                                    guru[i]['nama'] ?? '',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
                               ),
                             ),
                             Expanded(
                               flex: 4,
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Text(guru[i]['jabatan'] ?? ''),
+                              child: Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Text(
+                                    guru[i]['jabatan'] ?? '',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
                               ),
                             ),
                             IconButton(

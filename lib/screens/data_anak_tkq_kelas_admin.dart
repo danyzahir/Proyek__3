@@ -80,14 +80,14 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple[100],
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                            borderRadius: BorderRadius.circular(20)),
                       ),
                       onPressed: () async {
                         final namaText = namaController.text.trim();
                         if (namaText.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Nama tidak boleh kosong')),
+                            const SnackBar(
+                                content: Text('Nama tidak boleh kosong')),
                           );
                           return;
                         }
@@ -132,7 +132,10 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
 
   void _hapusAnak(String docId) async {
     try {
-      await FirebaseFirestore.instance.collection('anak_tkq').doc(docId).delete();
+      await FirebaseFirestore.instance
+          .collection('anak_tkq')
+          .doc(docId)
+          .delete();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Data berhasil dihapus')),
       );
@@ -148,16 +151,12 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Debug print untuk kelas yang dicari
-    print('Mencari data kelas: ${widget.kelas}');
-
     return Scaffold(
       backgroundColor: Colors.blueGrey[100],
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header
               Container(
                 padding: EdgeInsets.symmetric(
                     horizontal: screenWidth * 0.05,
@@ -234,10 +233,7 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                   ],
                 ),
               ),
-
               SizedBox(height: screenHeight * 0.02),
-
-              // Data List
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                 child: Column(
@@ -263,7 +259,6 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                       stream: FirebaseFirestore.instance
                           .collection('anak_tkq')
                           .where('kelas', isEqualTo: widget.kelas)
-                          // .orderBy('timestamp', descending: true) // Coba di-uncomment kalau sudah yakin timestamp ada di semua dokumen
                           .snapshots(),
                       builder: (context, snapshot) {
                         if (snapshot.hasError) {
@@ -272,7 +267,8 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                             child: Text('Error: ${snapshot.error}'),
                           );
                         }
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Padding(
                             padding: EdgeInsets.all(20),
                             child: CircularProgressIndicator(),
@@ -284,8 +280,6 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                             child: Text("Belum ada data."),
                           );
                         }
-
-                        print("Jumlah data anak: ${snapshot.data!.docs.length}");
 
                         return Column(
                           children: snapshot.data!.docs.map((doc) {
@@ -302,16 +296,22 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                                 children: [
                                   Expanded(
                                     flex: 4,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Text(data['nama'] ?? '-'),
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12.0),
+                                        child: Text(data['nama'] ?? '-',
+                                            textAlign: TextAlign.center),
+                                      ),
                                     ),
                                   ),
                                   Expanded(
                                     flex: 4,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Text(data['kelas'] ?? '-'),
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12.0),
+                                        child: Text(data['kelas'] ?? '-',
+                                            textAlign: TextAlign.center),
+                                      ),
                                     ),
                                   ),
                                   IconButton(
@@ -333,7 +333,6 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
                   ],
                 ),
               ),
-
               SizedBox(height: screenHeight * 0.03),
             ],
           ),
@@ -355,6 +354,7 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakTKQAdminKelas> {
               fontSize: screenWidth * 0.035,
               fontWeight: FontWeight.bold,
             ),
+            textAlign: TextAlign.center,
           ),
         ),
       ),

@@ -58,7 +58,8 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                 child: FutureBuilder<QuerySnapshot>(
                   future: FirebaseFirestore.instance
                       .collection('anak_sdit')
-                      .where('kelas', isEqualTo: _extractKelas(widget.namaKelas)) // ← fix here
+                      .where('kelas',
+                          isEqualTo: _extractKelas(widget.namaKelas))
                       .get(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -66,7 +67,8 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                       return Center(
-                          child: Text('Tidak ada data siswa kelas ${widget.namaKelas}.'));
+                          child: Text(
+                              'Tidak ada data siswa kelas ${widget.namaKelas}.'));
                     }
 
                     final dataList = snapshot.data!.docs;
@@ -93,7 +95,8 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                               ),
                               elevation: 5,
                               shadowColor: Colors.black54,
-                              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 25, vertical: 10),
                             ),
                             onPressed: _simpanNilaiKeFirebase,
                             child: const Text(
@@ -111,19 +114,23 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                           child: ListView.builder(
                             itemCount: dataList.length,
                             itemBuilder: (context, index) {
-                              final data = dataList[index].data() as Map<String, dynamic>;
+                              final data = dataList[index].data()
+                                  as Map<String, dynamic>;
                               final nama = data['nama'] ?? '-';
 
                               return Container(
                                 decoration: BoxDecoration(
-                                  color: index % 2 == 0 ? Colors.white : Colors.grey[100],
+                                  color: index % 2 == 0
+                                      ? Colors.white
+                                      : Colors.grey[100],
                                   borderRadius: BorderRadius.vertical(
                                     bottom: index == dataList.length - 1
                                         ? const Radius.circular(10)
                                         : Radius.zero,
                                   ),
                                 ),
-                                padding: EdgeInsets.symmetric(vertical: screenWidth * 0.025),
+                                padding: EdgeInsets.symmetric(
+                                    vertical: screenWidth * 0.025),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -131,7 +138,8 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                                       child: Center(
                                         child: Text(
                                           '${index + 1}',
-                                          style: TextStyle(fontSize: screenWidth * 0.035),
+                                          style: TextStyle(
+                                              fontSize: screenWidth * 0.035),
                                         ),
                                       ),
                                     ),
@@ -140,17 +148,25 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                                       child: Center(
                                         child: Text(
                                           nama,
-                                          style: TextStyle(fontSize: screenWidth * 0.035),
+                                          style: TextStyle(
+                                              fontSize: screenWidth * 0.035),
                                         ),
                                       ),
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: screenWidth * 0.01),
                                         child: TextField(
                                           controller: utsControllers[nama],
                                           keyboardType: TextInputType.number,
+                                          textAlign: TextAlign.center,
                                           decoration: const InputDecoration(
+                                            isDense: true,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    vertical: 10),
                                             border: InputBorder.none,
                                             hintText: 'UTS',
                                           ),
@@ -159,11 +175,18 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: screenWidth * 0.01),
                                         child: TextField(
                                           controller: uasControllers[nama],
                                           keyboardType: TextInputType.number,
+                                          textAlign: TextAlign.center,
                                           decoration: const InputDecoration(
+                                            isDense: true,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    vertical: 10),
                                             border: InputBorder.none,
                                             hintText: 'UAS',
                                           ),
@@ -239,7 +262,8 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
                         await FirebaseAuth.instance.signOut();
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => const LoginScreen()),
                           (route) => false,
                         );
                       }
@@ -403,7 +427,8 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
         if (utsVal != null && uasVal != null) {
           double rata2 = (utsVal + uasVal) / 2;
 
-          final docRef = FirebaseFirestore.instance.collection('nilai_sdit').doc(nama);
+          final docRef =
+              FirebaseFirestore.instance.collection('nilai_sdit').doc(nama);
 
           batch.set(docRef, {
             'nama': nama,

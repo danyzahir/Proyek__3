@@ -317,16 +317,20 @@ class _DataGuruTKQAdminState extends State<DataGuruTKQAdmin> {
                           children: [
                             Expanded(
                               flex: 4,
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Text(guru[i]['nama'] ?? ''),
+                              child: Center(
+                                child: Text(
+                                  guru[i]['nama'] ?? '',
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ),
                             Expanded(
                               flex: 4,
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Text(guru[i]['jabatan'] ?? ''),
+                              child: Center(
+                                child: Text(
+                                  guru[i]['jabatan'] ?? '',
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ),
                             IconButton(

@@ -18,138 +18,10 @@ class DataAnakTKQKelas extends StatefulWidget {
 }
 
 class _DataAnakTKQKelasState extends State<DataAnakTKQKelas> {
-  final TextEditingController namaController = TextEditingController();
-
-  void _tambahAtauEditAnak({String? docId}) {
-    final isEdit = docId != null;
-
-    if (isEdit) {
-      FirebaseFirestore.instance
-          .collection('anak_tkq')
-          .doc(docId)
-          .get()
-          .then((doc) {
-        if (doc.exists) {
-          namaController.text = doc['nama'] ?? '';
-          _showForm(docId: docId);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Data tidak ditemukan')),
-          );
-        }
-      });
-    } else {
-      namaController.clear();
-      _showForm();
-    }
-  }
-
-  void _showForm({String? docId}) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.purple[50],
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  docId == null ? "Tambah Data Anak" : "Edit Data Anak",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: namaController,
-                  decoration: const InputDecoration(labelText: 'Nama'),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Text("Batal",
-                          style: TextStyle(color: Colors.purple)),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple[100],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      onPressed: () async {
-                        final namaText = namaController.text.trim();
-                        if (namaText.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Nama tidak boleh kosong')),
-                          );
-                          return;
-                        }
-
-                        final data = {
-                          'nama': namaText,
-                          'kelas': widget.kelas.trim(),
-                          'oleh': widget.username,
-                          'timestamp': FieldValue.serverTimestamp(),
-                        };
-
-                        try {
-                          if (docId == null) {
-                            await FirebaseFirestore.instance
-                                .collection('anak_tkq')
-                                .add(data);
-                          } else {
-                            await FirebaseFirestore.instance
-                                .collection('anak_tkq')
-                                .doc(docId)
-                                .update(data);
-                          }
-                          namaController.clear();
-                          Navigator.pop(context);
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: $e')),
-                          );
-                        }
-                      },
-                      child: const Text("Simpan"),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _hapusAnak(String docId) async {
-    try {
-      await FirebaseFirestore.instance.collection('anak_tkq').doc(docId).delete();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data berhasil dihapus')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error menghapus data: $e')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-
-    // Debug print untuk kelas yang dicari
-    print('Mencari data kelas: ${widget.kelas}');
 
     return Scaffold(
       backgroundColor: Colors.blueGrey[100],
@@ -160,13 +32,15 @@ class _DataAnakTKQKelasState extends State<DataAnakTKQKelas> {
               // Header
               Container(
                 padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.05,
-                    vertical: screenHeight * 0.05),
+                  horizontal: screenWidth * 0.05,
+                  vertical: screenHeight * 0.05,
+                ),
                 decoration: const BoxDecoration(
                   color: Colors.green,
                   borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(30),
-                      bottomRight: Radius.circular(30)),
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -250,12 +124,8 @@ class _DataAnakTKQKelasState extends State<DataAnakTKQKelas> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Row(
                         children: [
-                          _buildHeaderCell('Nama', screenWidth, flex: 4),
-                          _buildHeaderCell('Kelas', screenWidth, flex: 4),
-                          IconButton(
-                            icon: const Icon(Icons.add, color: Colors.white),
-                            onPressed: () => _tambahAtauEditAnak(),
-                          ),
+                          _buildHeaderCell('Nama', screenWidth, flex: 5),
+                          _buildHeaderCell('Kelas', screenWidth, flex: 3),
                         ],
                       ),
                     ),
@@ -263,7 +133,6 @@ class _DataAnakTKQKelasState extends State<DataAnakTKQKelas> {
                       stream: FirebaseFirestore.instance
                           .collection('anak_tkq')
                           .where('kelas', isEqualTo: widget.kelas)
-                          // .orderBy('timestamp', descending: true) // Coba di-uncomment kalau sudah yakin timestamp ada di semua dokumen
                           .snapshots(),
                       builder: (context, snapshot) {
                         if (snapshot.hasError) {
@@ -272,7 +141,8 @@ class _DataAnakTKQKelasState extends State<DataAnakTKQKelas> {
                             child: Text('Error: ${snapshot.error}'),
                           );
                         }
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Padding(
                             padding: EdgeInsets.all(20),
                             child: CircularProgressIndicator(),
@@ -284,8 +154,6 @@ class _DataAnakTKQKelasState extends State<DataAnakTKQKelas> {
                             child: Text("Belum ada data."),
                           );
                         }
-
-                        print("Jumlah data anak: ${snapshot.data!.docs.length}");
 
                         return Column(
                           children: snapshot.data!.docs.map((doc) {
@@ -301,27 +169,26 @@ class _DataAnakTKQKelasState extends State<DataAnakTKQKelas> {
                               child: Row(
                                 children: [
                                   Expanded(
-                                    flex: 4,
+                                    flex: 5,
                                     child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Text(data['nama'] ?? '-'),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12.0, horizontal: 8.0),
+                                      child: Text(
+                                        data['nama'] ?? '-',
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
                                   ),
                                   Expanded(
-                                    flex: 4,
+                                    flex: 3,
                                     child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Text(data['kelas'] ?? '-'),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12.0, horizontal: 8.0),
+                                      child: Text(
+                                        data['kelas'] ?? '-',
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.edit, size: 18),
-                                    onPressed: () =>
-                                        _tambahAtauEditAnak(docId: doc.id),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.remove, size: 18),
-                                    onPressed: () => _hapusAnak(doc.id),
                                   ),
                                 ],
                               ),
@@ -347,15 +214,14 @@ class _DataAnakTKQKelasState extends State<DataAnakTKQKelas> {
       flex: flex,
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: screenWidth * 0.03),
-        child: Center(
-          child: Text(
-            text,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: screenWidth * 0.035,
-              fontWeight: FontWeight.bold,
-            ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: screenWidth * 0.035,
+            fontWeight: FontWeight.bold,
           ),
+          textAlign: TextAlign.center,
         ),
       ),
     );

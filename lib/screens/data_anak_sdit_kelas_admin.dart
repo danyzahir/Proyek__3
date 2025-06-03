@@ -87,7 +87,8 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakSDITAdminKelas> {
                         final namaText = namaController.text.trim();
                         if (namaText.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Nama tidak boleh kosong')),
+                            const SnackBar(
+                                content: Text('Nama tidak boleh kosong')),
                           );
                           return;
                         }
@@ -132,7 +133,10 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakSDITAdminKelas> {
 
   void _hapusAnak(String docId) async {
     try {
-      await FirebaseFirestore.instance.collection('anak_sdit').doc(docId).delete();
+      await FirebaseFirestore.instance
+          .collection('anak_sdit')
+          .doc(docId)
+          .delete();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Data berhasil dihapus')),
       );
@@ -147,9 +151,6 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakSDITAdminKelas> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-
-    // Debug print untuk kelas yang dicari
-    print('Mencari data kelas: ${widget.kelas}');
 
     return Scaffold(
       backgroundColor: Colors.blueGrey[100],
@@ -263,7 +264,6 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakSDITAdminKelas> {
                       stream: FirebaseFirestore.instance
                           .collection('anak_sdit')
                           .where('kelas', isEqualTo: widget.kelas)
-                          // .orderBy('timestamp', descending: true) // Coba di-uncomment kalau sudah yakin timestamp ada di semua dokumen
                           .snapshots(),
                       builder: (context, snapshot) {
                         if (snapshot.hasError) {
@@ -272,7 +272,8 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakSDITAdminKelas> {
                             child: Text('Error: ${snapshot.error}'),
                           );
                         }
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Padding(
                             padding: EdgeInsets.all(20),
                             child: CircularProgressIndicator(),
@@ -284,8 +285,6 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakSDITAdminKelas> {
                             child: Text("Belum ada data."),
                           );
                         }
-
-                        print("Jumlah data anak: ${snapshot.data!.docs.length}");
 
                         return Column(
                           children: snapshot.data!.docs.map((doc) {
@@ -304,14 +303,18 @@ class _DataAnakTKQAdminKelasState extends State<DataAnakSDITAdminKelas> {
                                     flex: 4,
                                     child: Padding(
                                       padding: const EdgeInsets.all(12.0),
-                                      child: Text(data['nama'] ?? '-'),
+                                      child: Center(
+                                        child: Text(data['nama'] ?? '-'),
+                                      ),
                                     ),
                                   ),
                                   Expanded(
                                     flex: 4,
                                     child: Padding(
                                       padding: const EdgeInsets.all(12.0),
-                                      child: Text(data['kelas'] ?? '-'),
+                                      child: Center(
+                                        child: Text(data['kelas'] ?? '-'),
+                                      ),
                                     ),
                                   ),
                                   IconButton(
