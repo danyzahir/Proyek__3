@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:proyek3/screens/rekap_absensi.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+
+import 'rekap_absensi.dart';
 import 'absensi.dart';
 import 'home_screen.dart';
 import 'nilai.dart';
@@ -22,6 +26,7 @@ class Rekapnilaisditkelas extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // HEADER
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 45),
               decoration: const BoxDecoration(
@@ -97,12 +102,15 @@ class Rekapnilaisditkelas extends StatelessWidget {
                 ],
               ),
             ),
+
             const SizedBox(height: 20),
             const Text(
               "SEMESTER",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
+
+            // TABEL HEADER
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -154,6 +162,8 @@ class Rekapnilaisditkelas extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
+
+                  // DATA NILAI
                   FutureBuilder<QuerySnapshot>(
                     future: FirebaseFirestore.instance
                         .collection('nilai_sdit')
@@ -172,12 +182,8 @@ class Rekapnilaisditkelas extends StatelessWidget {
                       final dataList = docs.map((doc) {
                         final data = doc.data() as Map<String, dynamic>;
                         final nama = data['nama'] ?? '-';
-                        final uts =
-                            double.tryParse(data['uts']?.toString() ?? '0') ??
-                                0;
-                        final uas =
-                            double.tryParse(data['uas']?.toString() ?? '0') ??
-                                0;
+                        final uts = double.tryParse(data['uts']?.toString() ?? '0') ?? 0;
+                        final uas = double.tryParse(data['uas']?.toString() ?? '0') ?? 0;
                         final rata2 = (uts * 0.4) + (uas * 0.6);
                         return {
                           'nama': nama,
@@ -190,42 +196,54 @@ class Rekapnilaisditkelas extends StatelessWidget {
                       dataList.sort((a, b) => b['rata2'].compareTo(a['rata2']));
 
                       return Column(
-                        children: List.generate(dataList.length, (index) {
-                          final item = dataList[index];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                    flex: 1,
-                                    child: Center(child: Text('${index + 1}'))),
-                                Expanded(
-                                    flex: 3,
-                                    child: Center(child: Text(item['nama']))),
-                                Expanded(
-                                    flex: 2,
-                                    child: Center(
-                                        child: Text(
-                                            item['uts'].toStringAsFixed(1)))),
-                                Expanded(
-                                    flex: 2,
-                                    child: Center(
-                                        child: Text(
-                                            item['uas'].toStringAsFixed(1)))),
-                                Expanded(
-                                    flex: 2,
-                                    child: Center(
-                                        child: Text(
-                                            item['rata2'].toStringAsFixed(1)))),
-                              ],
-                            ),
-                          );
-                        }),
+                        children: [
+                          // List Item
+                          Column(
+                            children: List.generate(dataList.length, (index) {
+                              final item = dataList[index];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                        flex: 1,
+                                        child: Center(child: Text('${index + 1}'))),
+                                    Expanded(
+                                        flex: 3,
+                                        child: Center(child: Text(item['nama']))),
+                                    Expanded(
+                                        flex: 2,
+                                        child: Center(child: Text(item['uts'].toStringAsFixed(1)))),
+                                    Expanded(
+                                        flex: 2,
+                                        child: Center(child: Text(item['uas'].toStringAsFixed(1)))),
+                                    Expanded(
+                                        flex: 2,
+                                        child: Center(child: Text(item['rata2'].toStringAsFixed(1)))),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          // BUTTON PDF
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              await _generatePdf(context, dataList);
+                            },
+                            icon: const Icon(Icons.picture_as_pdf),
+                            label: const Text('Export ke PDF'),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -236,6 +254,8 @@ class Rekapnilaisditkelas extends StatelessWidget {
           ],
         ),
       ),
+
+      // BOTTOM NAVIGATION
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: const BoxDecoration(
@@ -297,5 +317,50 @@ class Rekapnilaisditkelas extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _generatePdf(
+      BuildContext context, List<Map<String, dynamic>> dataList) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text("Rekap Nilai Kelas $kelas",
+                  style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 20),
+              pw.Table.fromTextArray(
+                headers: ['No', 'Nama', 'UTS', 'UAS', 'Rata-rata'],
+                data: List.generate(dataList.length, (index) {
+                  final item = dataList[index];
+                  return [
+                    '${index + 1}',
+                    item['nama'],
+                    item['uts'].toStringAsFixed(1),
+                    item['uas'].toStringAsFixed(1),
+                    item['rata2'].toStringAsFixed(1),
+                  ];
+                }),
+                headerStyle: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.white,
+                ),
+                headerDecoration: const pw.BoxDecoration(
+                  color: PdfColors.green,
+                ),
+                cellAlignment: pw.Alignment.center,
+                cellStyle: const pw.TextStyle(fontSize: 10),
+                border: pw.TableBorder.all(color: PdfColors.grey),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 }

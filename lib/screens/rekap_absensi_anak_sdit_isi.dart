@@ -8,6 +8,11 @@ import 'nilai.dart';
 import 'data_guru_anak.dart';
 import 'login.dart';
 
+// Tambahan import untuk PDF dan Printing
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+
 class RekapAbsenAnakSDIT extends StatelessWidget {
   final String username;
   final String namaKelas;
@@ -18,15 +23,61 @@ class RekapAbsenAnakSDIT extends StatelessWidget {
     required this.namaKelas,
   });
 
-  // Fungsi bantu untuk ekstrak kode kelas dari nama kelas
-  // Misal "KELAS A" jadi "A"
+  // Fungsi bantu ekstrak kode kelas dari "KELAS A" -> "A"
   String _extractKelas(String kelasLengkap) {
-    // Asumsi nama kelas seperti "KELAS A"
     final parts = kelasLengkap.split(' ');
     if (parts.length >= 2) {
-      return parts[1]; // "A"
+      return parts[1];
     }
-    return kelasLengkap; // fallback
+    return kelasLengkap;
+  }
+
+  // Fungsi untuk generate dan tampilkan PDF rekap absensi
+  Future<void> _generatePdf(BuildContext context, Map<String, Map<String, int>> rekap) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text("Rekap Absensi $namaKelas",
+                  style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 20),
+
+              pw.Table.fromTextArray(
+                headers: ['No', 'Nama Siswa', 'Hadir', 'Izin', 'Sakit', 'Alpa'],
+                data: List.generate(rekap.length, (index) {
+                  final nama = rekap.keys.elementAt(index);
+                  final data = rekap[nama]!;
+                  return [
+                    '${index + 1}',
+                    nama,
+                    data['HADIR'].toString(),
+                    data['IZIN'].toString(),
+                    data['SAKIT'].toString(),
+                    data['ALPA'].toString(),
+                  ];
+                }),
+                headerStyle: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.white,
+                ),
+                headerDecoration: const pw.BoxDecoration(
+                  color: PdfColors.green,
+                ),
+                cellAlignment: pw.Alignment.center,
+                cellStyle: const pw.TextStyle(fontSize: 10),
+                border: pw.TableBorder.all(color: PdfColors.grey),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
   @override
@@ -129,170 +180,136 @@ class RekapAbsenAnakSDIT extends StatelessWidget {
             // Firebase Data
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  // Header Tabel
-                  Row(
+              child: FutureBuilder<QuerySnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('sdit_absen')
+                    .where('kelas', isEqualTo: _extractKelas(namaKelas))
+                    .get(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Text("Tidak ada data absensi tersedia.");
+                  }
+
+                  final docs = snapshot.data!.docs;
+
+                  // Hitung rekap absensi berdasarkan nama
+                  Map<String, Map<String, int>> rekap = {};
+
+                  for (var doc in docs) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final nama = data['nama'] ?? 'Tidak diketahui';
+                    final absen = data['absen'] ?? '';
+
+                    if (!rekap.containsKey(nama)) {
+                      rekap[nama] = {
+                        'HADIR': 0,
+                        'IZIN': 0,
+                        'SAKIT': 0,
+                        'ALPA': 0,
+                      };
+                    }
+
+                    switch (absen) {
+                      case 'H':
+                        rekap[nama]!['HADIR'] = rekap[nama]!['HADIR']! + 1;
+                        break;
+                      case 'I':
+                        rekap[nama]!['IZIN'] = rekap[nama]!['IZIN']! + 1;
+                        break;
+                      case 'S':
+                        rekap[nama]!['SAKIT'] = rekap[nama]!['SAKIT']! + 1;
+                        break;
+                      case 'A':
+                        rekap[nama]!['ALPA'] = rekap[nama]!['ALPA']! + 1;
+                        break;
+                    }
+                  }
+
+                  final siswaList = rekap.keys.toList();
+
+                  return Column(
                     children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(8),
+                      ...List.generate(siswaList.length, (index) {
+                        final nama = siswaList[index];
+                        final data = rekap[nama]!;
+
+                        return Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Row(
-                            children: const [
-                              SizedBox(
-                                width: 40,
-                                child: Center(
-                                  child: Text(
-                                    "No",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ),
-                              VerticalDivider(
-                                color: Colors.white,
-                                thickness: 1,
-                                width: 20,
-                              ),
-                              Expanded(
-                                child: Center(
-                                  child: Text(
-                                    "Nama siswa",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // List dari Firestore
-                  FutureBuilder<QuerySnapshot>(
-                    future: FirebaseFirestore.instance
-                        .collection('sdit_absen')
-                        .where('kelas', isEqualTo: _extractKelas(namaKelas))
-                        .get(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return const Text("Tidak ada data absensi tersedia.");
-                      }
-
-                      final docs = snapshot.data!.docs;
-
-                      // Hitung rekap absensi berdasarkan nama
-                      Map<String, Map<String, int>> rekap = {};
-
-                      for (var doc in docs) {
-                        final data = doc.data() as Map<String, dynamic>;
-                        final nama = data['nama'] ?? 'Tidak diketahui';
-                        final absen = data['absen'] ?? '';
-
-                        if (!rekap.containsKey(nama)) {
-                          rekap[nama] = {
-                            'HADIR': 0,
-                            'IZIN': 0,
-                            'SAKIT': 0,
-                            'ALPA': 0,
-                          };
-                        }
-
-                        switch (absen) {
-                          case 'H':
-                            rekap[nama]!['HADIR'] = rekap[nama]!['HADIR']! + 1;
-                            break;
-                          case 'I':
-                            rekap[nama]!['IZIN'] = rekap[nama]!['IZIN']! + 1;
-                            break;
-                          case 'S':
-                            rekap[nama]!['SAKIT'] = rekap[nama]!['SAKIT']! + 1;
-                            break;
-                          case 'A':
-                            rekap[nama]!['ALPA'] = rekap[nama]!['ALPA']! + 1;
-                            break;
-                        }
-                      }
-
-                      final siswaList = rekap.keys.toList();
-
-                      return Column(
-                        children: List.generate(siswaList.length, (index) {
-                          final nama = siswaList[index];
-                          final data = rekap[nama]!;
-
-                          return Card(
+                          child: ExpansionTile(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: ExpansionTile(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              tilePadding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
-                              childrenPadding: const EdgeInsets.only(
-                                  left: 20, right: 12, bottom: 12),
-                              title: Row(
-                                children: [
-                                  SizedBox(
-                                    width: 40,
-                                    child: Text(
-                                      "${index + 1}.",
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      nama,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            tilePadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            childrenPadding: const EdgeInsets.only(
+                                left: 20, right: 12, bottom: 12),
+                            title: Row(
                               children: [
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("HADIR = ${data['HADIR']} Hari"),
-                                      const SizedBox(height: 4),
-                                      Text("IZIN = ${data['IZIN']} Hari"),
-                                      const SizedBox(height: 4),
-                                      Text("SAKIT = ${data['SAKIT']} Hari"),
-                                      const SizedBox(height: 4),
-                                      Text("ALPA = ${data['ALPA']} Hari"),
-                                    ],
+                                SizedBox(
+                                  width: 40,
+                                  child: Text(
+                                    "${index + 1}.",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    nama,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                               ],
                             ),
-                          );
-                        }),
-                      );
-                    },
-                  ),
-                ],
+                            children: [
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text("HADIR = ${data['HADIR']} Hari"),
+                                    const SizedBox(height: 4),
+                                    Text("IZIN = ${data['IZIN']} Hari"),
+                                    const SizedBox(height: 4),
+                                    Text("SAKIT = ${data['SAKIT']} Hari"),
+                                    const SizedBox(height: 4),
+                                    Text("ALPA = ${data['ALPA']} Hari"),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+
+                      const SizedBox(height: 15),
+
+                      // Tombol Export ke PDF
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          await _generatePdf(context, rekap);
+                        },
+                        icon: const Icon(Icons.picture_as_pdf),
+                        label: const Text('Export ke PDF'),
+                        style:
+                            ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                      ),
+
+                      const SizedBox(height: 20),
+                    ],
+                  );
+                },
               ),
             ),
 

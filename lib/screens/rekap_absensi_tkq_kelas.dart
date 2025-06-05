@@ -8,6 +8,11 @@ import 'nilai.dart';
 import 'data_guru_anak.dart';
 import 'login.dart';
 
+// Import tambahan untuk PDF dan Printing
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+
 class RekapAbsenTKQKelas extends StatelessWidget {
   final String username;
   final String namaKelas;
@@ -17,6 +22,55 @@ class RekapAbsenTKQKelas extends StatelessWidget {
     required this.username,
     required this.namaKelas,
   });
+
+  // Fungsi generate PDF
+  Future<void> _generatePdf(
+      BuildContext context, Map<String, Map<String, int>> rekap, String kelas) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text("Rekap Absensi $kelas",
+                style:
+                    pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 20),
+            pw.Table.fromTextArray(
+              headers: ['No', 'Nama Siswa', 'Hadir', 'Izin', 'Sakit', 'Alpa'],
+              data: List.generate(rekap.length, (index) {
+                final nama = rekap.keys.elementAt(index);
+                final data = rekap[nama]!;
+                return [
+                  '${index + 1}',
+                  nama,
+                  data['HADIR'].toString(),
+                  data['IZIN'].toString(),
+                  data['SAKIT'].toString(),
+                  data['ALPA'].toString(),
+                ];
+              }),
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.white,
+              ),
+              headerDecoration: const pw.BoxDecoration(
+                color: PdfColors.green,
+              ),
+              cellAlignment: pw.Alignment.center,
+              cellStyle: const pw.TextStyle(fontSize: 10),
+              border: pw.TableBorder.all(color: PdfColors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdf.save(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +221,7 @@ class RekapAbsenTKQKelas extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
 
-                  // List dari Firestore
+                  // List dari Firestore dan tombol export
                   FutureBuilder<QuerySnapshot>(
                     future: FirebaseFirestore.instance
                         .collection('tkq_absen')
@@ -219,65 +273,84 @@ class RekapAbsenTKQKelas extends StatelessWidget {
                       final siswaList = rekap.keys.toList();
 
                       return Column(
-                        children: List.generate(siswaList.length, (index) {
-                          final nama = siswaList[index];
-                          final data = rekap[nama]!;
+                        children: [
+                          ...List.generate(siswaList.length, (index) {
+                            final nama = siswaList[index];
+                            final data = rekap[nama]!;
 
-                          return Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ExpansionTile(
+                            return Card(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              tilePadding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
-                              childrenPadding: const EdgeInsets.only(
-                                  left: 20, right: 12, bottom: 12),
-                              title: Row(
-                                children: [
-                                  SizedBox(
-                                    width: 40,
-                                    child: Text(
-                                      "${index + 1}.",
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                      textAlign: TextAlign.center,
+                              child: ExpansionTile(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                tilePadding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                childrenPadding: const EdgeInsets.only(
+                                    left: 20, right: 12, bottom: 12),
+                                title: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 40,
+                                      child: Text(
+                                        "${index + 1}.",
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      nama,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                      textAlign: TextAlign.center,
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        nama,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                children: [
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("HADIR = ${data['HADIR']} Hari"),
+                                        const SizedBox(height: 4),
+                                        Text("IZIN = ${data['IZIN']} Hari"),
+                                        const SizedBox(height: 4),
+                                        Text("SAKIT = ${data['SAKIT']} Hari"),
+                                        const SizedBox(height: 4),
+                                        Text("ALPA = ${data['ALPA']} Hari"),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
-                              children: [
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("HADIR = ${data['HADIR']} Hari"),
-                                      const SizedBox(height: 4),
-                                      Text("IZIN = ${data['IZIN']} Hari"),
-                                      const SizedBox(height: 4),
-                                      Text("SAKIT = ${data['SAKIT']} Hari"),
-                                      const SizedBox(height: 4),
-                                      Text("ALPA = ${data['ALPA']} Hari"),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            );
+                          }),
+                          const SizedBox(height: 15),
+
+                          // Tombol Export PDF
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              await _generatePdf(context, rekap, upperKelas);
+                            },
+                            icon: const Icon(Icons.picture_as_pdf),
+                            label: const Text("Export PDF"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
+                              textStyle: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
                             ),
-                          );
-                        }),
+                          ),
+                        ],
                       );
                     },
                   ),

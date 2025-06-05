@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+
 import 'package:proyek3/screens/rekap_absensi.dart';
 import 'absensi.dart';
 import 'home_screen.dart';
@@ -34,6 +39,47 @@ class RekapAbsenGuruTKQ extends StatelessWidget {
       }
     }
     return rekap;
+  }
+
+  Future<void> _generatePdfAndPrint(BuildContext context, Map<String, Map<String, int>> data) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('Rekap Absensi Guru TKQ',
+                  style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 20),
+              pw.Table.fromTextArray(
+                headers: ['No', 'Nama Guru', 'Hadir (H)', 'Izin (I)', 'Sakit (S)', 'Alpa (A)'],
+                data: List.generate(data.length, (index) {
+                  final nama = data.keys.elementAt(index);
+                  final absen = data[nama]!;
+                  return [
+                    (index + 1).toString(),
+                    nama,
+                    absen['H'].toString(),
+                    absen['I'].toString(),
+                    absen['S'].toString(),
+                    absen['A'].toString(),
+                  ];
+                }),
+                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                cellAlignment: pw.Alignment.center,
+                headerDecoration: pw.BoxDecoration(color: PdfColors.grey300),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Tampilkan preview print atau simpan file pdf
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
   @override
@@ -121,6 +167,18 @@ class RekapAbsenGuruTKQ extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.picture_as_pdf),
+                        label: const Text('Export ke PDF'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.green,
+                        ),
+                        onPressed: () {
+                          _generatePdfAndPrint(context, rekap);
+                        },
                       ),
                     ],
                   ),
@@ -235,14 +293,14 @@ class RekapAbsenGuruTKQ extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 26, color: isActive ?Colors.green : Colors.black54),
+          Icon(icon, size: 26, color: isActive ? Colors.green : Colors.black54),
           const SizedBox(height: 2),
           Text(
             title,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: isActive ?Colors.green : Colors.black54,
+              color: isActive ? Colors.green : Colors.black54,
             ),
           ),
         ],

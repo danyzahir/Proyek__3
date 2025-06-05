@@ -16,6 +16,8 @@ dependencies:
   firebase_core: ^2.27.0
   firebase_auth: ^4.17.0
   cloud_firestore: ^4.15.0
+  pdf: ^3.10.4
+  printing: ^5.11.0
 
   image_picker: ^0.8.5+3 
   intl: ^0.20.2
