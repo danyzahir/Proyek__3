@@ -27,12 +27,37 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
   Map<String, TextEditingController> utsControllers = {};
   Map<String, TextEditingController> uasControllers = {};
   Map<String, String> rataRataMap = {};
+  List<DocumentSnapshot> dataList = [];
 
   @override
   void dispose() {
     for (var c in utsControllers.values) c.dispose();
     for (var c in uasControllers.values) c.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('anak_tkq')
+        .where('kelas', isEqualTo: widget.namaKelas)
+        .get();
+
+    dataList = snapshot.docs;
+
+    for (var doc in dataList) {
+      final nama = doc['nama'];
+      utsControllers[nama] = TextEditingController();
+      uasControllers[nama] = TextEditingController();
+      rataRataMap[nama] = '-';
+    }
+
+    setState(() {});
   }
 
   @override
@@ -50,162 +75,131 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
             Expanded(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                child: FutureBuilder<QuerySnapshot>(
-                  future: FirebaseFirestore.instance
-                      .collection('anak_tkq')
-                      .where('kelas', isEqualTo: widget.namaKelas)
-                      .get(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return Center(
-                          child: Text(
-                              'Tidak ada data siswa kelas ${widget.namaKelas}.'));
-                    }
-
-                    final dataList = snapshot.data!.docs;
-
-                    for (var doc in dataList) {
-                      final nama = doc['nama'] ?? '';
-                      if (!utsControllers.containsKey(nama)) {
-                        utsControllers[nama] = TextEditingController();
-                      }
-                      if (!uasControllers.containsKey(nama)) {
-                        uasControllers[nama] = TextEditingController();
-                      }
-                    }
-
-                    return Column(
-                      children: [
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
+                child: dataList.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : Column(
+                        children: [
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                elevation: 5,
+                                shadowColor: Colors.black54,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 25, vertical: 10),
                               ),
-                              elevation: 5,
-                              shadowColor: Colors.black54,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 25, vertical: 10),
-                            ),
-                            onPressed: _simpanNilaiKeFirebase,
-                            child: const Text(
-                              'SIMPAN NILAI',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                              onPressed: _simpanNilaiKeFirebase,
+                              child: const Text(
+                                'SIMPAN NILAI',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        _buildTableHeader(screenWidth),
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: dataList.length,
-                            itemBuilder: (context, index) {
-                              final data = dataList[index].data()
-                                  as Map<String, dynamic>;
-                              final nama = data['nama'] ?? '-';
+                          const SizedBox(height: 10),
+                          _buildTableHeader(screenWidth),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: dataList.length,
+                              itemBuilder: (context, index) {
+                                final data = dataList[index].data()
+                                    as Map<String, dynamic>;
+                                final nama = data['nama'];
 
-                              return Container(
-                                decoration: BoxDecoration(
-                                  color: index % 2 == 0
-                                      ? Colors.white
-                                      : Colors.grey[100],
-                                  borderRadius: BorderRadius.vertical(
-                                    bottom: index == dataList.length - 1
-                                        ? const Radius.circular(10)
-                                        : Radius.zero,
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: index % 2 == 0
+                                        ? Colors.white
+                                        : Colors.grey[100],
+                                    borderRadius: BorderRadius.vertical(
+                                      bottom: index == dataList.length - 1
+                                          ? const Radius.circular(10)
+                                          : Radius.zero,
+                                    ),
                                   ),
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                    vertical: screenWidth * 0.025),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      flex: 1,
-                                      child: Center(
-                                        child: Text(
-                                          '${index + 1}',
-                                          style: TextStyle(
-                                              fontSize: screenWidth * 0.035),
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: screenWidth * 0.025),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 1,
+                                        child: Center(
+                                          child: Text('${index + 1}',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      screenWidth * 0.035)),
                                         ),
                                       ),
-                                    ),
-                                    Expanded(
-                                      flex: 3,
-                                      child: Center(
-                                        child: Text(
-                                          nama,
-                                          style: TextStyle(
-                                              fontSize: screenWidth * 0.035),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Center(
+                                          child: Text(nama,
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      screenWidth * 0.035)),
                                         ),
                                       ),
-                                    ),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: screenWidth * 0.01,
-                                            horizontal: screenWidth * 0.01),
-                                        child: TextField(
-                                          controller: utsControllers[nama],
-                                          keyboardType: TextInputType.number,
-                                          textAlign: TextAlign.center,
-                                          decoration: const InputDecoration(
-                                            isDense: true,
-                                            contentPadding: EdgeInsets.zero,
-                                            border: InputBorder.none,
-                                            hintText: 'UTS',
+                                      Expanded(
+                                        flex: 2,
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 4),
+                                          child: TextField(
+                                            controller: utsControllers[nama],
+                                            keyboardType: TextInputType.number,
+                                            textAlign: TextAlign.center,
+                                            decoration: const InputDecoration(
+                                              isDense: true,
+                                              contentPadding: EdgeInsets.zero,
+                                              border: InputBorder.none,
+                                              hintText: 'UTS',
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            vertical: screenWidth * 0.01,
-                                            horizontal: screenWidth * 0.01),
-                                        child: TextField(
-                                          controller: uasControllers[nama],
-                                          keyboardType: TextInputType.number,
-                                          textAlign: TextAlign.center,
-                                          decoration: const InputDecoration(
-                                            isDense: true,
-                                            contentPadding: EdgeInsets.zero,
-                                            border: InputBorder.none,
-                                            hintText: 'UAS',
+                                      Expanded(
+                                        flex: 2,
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 4),
+                                          child: TextField(
+                                            controller: uasControllers[nama],
+                                            keyboardType: TextInputType.number,
+                                            textAlign: TextAlign.center,
+                                            decoration: const InputDecoration(
+                                              isDense: true,
+                                              contentPadding: EdgeInsets.zero,
+                                              border: InputBorder.none,
+                                              hintText: 'UAS',
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Center(
-                                        child: Text(
-                                          rataRataMap[nama] ?? '-',
-                                          style: TextStyle(
-                                              fontSize: screenWidth * 0.035,
-                                              fontWeight: FontWeight.bold),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Center(
+                                          child: Text(
+                                            rataRataMap[nama] ?? '-',
+                                            style: TextStyle(
+                                                fontSize: screenWidth * 0.035,
+                                                fontWeight: FontWeight.bold),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
+                        ],
+                      ),
               ),
             ),
             SizedBox(height: screenHeight * 0.03),
@@ -432,13 +426,15 @@ class _NilaiTKQNilaiState extends State<NilaiTKQNilai> {
           });
 
           rataRataMap[nama] = rata2.toStringAsFixed(2);
+        } else {
+          rataRataMap[nama] = '-';
         }
       }
     });
 
     await batch.commit();
 
-    setState(() {});
+    setState(() {}); // Refresh tampilan
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Data nilai berhasil disimpan')),

@@ -27,6 +27,7 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
   Map<String, TextEditingController> utsControllers = {};
   Map<String, TextEditingController> uasControllers = {};
   Map<String, String> rataRataMap = {};
+  bool _controllersInitialized = false; // 🔧 Tambahan penting
 
   @override
   void dispose() {
@@ -73,14 +74,14 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
 
                     final dataList = snapshot.data!.docs;
 
-                    for (var doc in dataList) {
-                      final nama = doc['nama'] ?? '';
-                      if (!utsControllers.containsKey(nama)) {
-                        utsControllers[nama] = TextEditingController();
+                    // 🔧 Cegah pembuatan controller ulang
+                    if (!_controllersInitialized) {
+                      for (var doc in dataList) {
+                        final nama = doc['nama'] ?? '';
+                        utsControllers[nama] ??= TextEditingController();
+                        uasControllers[nama] ??= TextEditingController();
                       }
-                      if (!uasControllers.containsKey(nama)) {
-                        uasControllers[nama] = TextEditingController();
-                      }
+                      _controllersInitialized = true;
                     }
 
                     return Column(
@@ -223,6 +224,8 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
       bottomNavigationBar: _buildBottomNav(screenHeight, screenWidth),
     );
   }
+
+  // ========== SISANYA TETAP SAMA (HEADER, FOOTER, SIMPAN) ==========
 
   Widget _buildHeader(double screenWidth, double screenHeight) {
     return Container(
@@ -445,7 +448,7 @@ class _NilaiSDITNilaiState extends State<NilaiSDITNilai> {
 
     await batch.commit();
 
-    setState(() {});
+    setState(() {}); // untuk menampilkan rata-rata
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Data nilai berhasil disimpan')),
